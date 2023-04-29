@@ -1,0 +1,404 @@
+options:
+  parameters:
+    author: ''
+    catch_exceptions: 'True'
+    category: '[GRC Hier Blocks]'
+    cmake_opt: ''
+    comment: ''
+    copyright: ''
+    description: ''
+    gen_cmake: 'On'
+    gen_linking: dynamic
+    generate_options: qt_gui
+    hier_block_src_path: '.:'
+    id: radar
+    max_nouts: '0'
+    output_language: python
+    placement: (0,0)
+    qt_qss_theme: ''
+    realtime_scheduling: ''
+    run: 'True'
+    run_command: '{python} -u {filename}'
+    run_options: prompt
+    sizing_mode: fixed
+    thread_safe_setters: ''
+    title: Not titled yet
+    window_size: (1000,1000)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 8]
+    rotation: 0
+    state: enabled
+
+blocks:
+- name: amplitude
+  id: variable
+  parameters:
+    comment: ''
+    value: '1.0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [448, 12.0]
+    rotation: 0
+    state: true
+- name: bandwidth_khz
+  id: variable
+  parameters:
+    comment: ''
+    value: '50.0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1000, 12.0]
+    rotation: 0
+    state: true
+- name: bandwidth_khz_lower_limit
+  id: variable
+  parameters:
+    comment: ''
+    value: '1.0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [176, 76.0]
+    rotation: 0
+    state: true
+- name: bandwidth_khz_upper_limit
+  id: variable
+  parameters:
+    comment: ''
+    value: '100.0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [352, 76.0]
+    rotation: 0
+    state: true
+- name: duty_cycle
+  id: variable
+  parameters:
+    comment: ''
+    value: '0.06'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [352, 12.0]
+    rotation: 0
+    state: true
+- name: fc_Hz
+  id: variable_qtgui_entry
+  parameters:
+    comment: ''
+    gui_hint: tab@0:0,0,1,1
+    label: Center Frequencies (Hz)
+    type: raw
+    value: '[5e3,10e3,15e3]'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [984, 388.0]
+    rotation: 0
+    state: disabled
+- name: num_samples_per_pulse
+  id: variable
+  parameters:
+    comment: ''
+    value: int(float(samp_rate) / float(prf_khz) * 1e3)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [536, 12.0]
+    rotation: 0
+    state: true
+- name: prf_khz
+  id: variable
+  parameters:
+    comment: ''
+    value: '3'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [272, 12.0]
+    rotation: 0
+    state: true
+- name: pulse_center_freq_hz
+  id: variable
+  parameters:
+    comment: ''
+    value: '500.0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [696, 12.0]
+    rotation: 0
+    state: true
+- name: samp_rate
+  id: variable
+  parameters:
+    comment: ''
+    value: 4e6
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [176, 12.0]
+    rotation: 0
+    state: enabled
+- name: time_bandwidth_product
+  id: variable
+  parameters:
+    comment: ''
+    value: '100.0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [840, 12.0]
+    rotation: 0
+    state: true
+- name: analog_sig_source_x_0
+  id: analog_sig_source_x
+  parameters:
+    affinity: ''
+    alias: ''
+    amp: '1'
+    comment: ''
+    freq: prf_khz
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    offset: '0'
+    phase: '0'
+    samp_rate: samp_rate
+    type: float
+    waveform: analog.GR_SQR_WAVE
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [136, 380.0]
+    rotation: 0
+    state: disabled
+- name: blocks_delay_0
+  id: blocks_delay
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: num_samp_delay = distance_traveled_m / speed_of_light_m_over_s
+    delay: int(100 / (3e8) * samp_rate)
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_ports: '1'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [440, 184.0]
+    rotation: 0
+    state: true
+- name: blocks_throttle_0
+  id: blocks_throttle
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    ignoretag: 'True'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samples_per_second: samp_rate
+    type: float
+    vlen: num_samples_per_pulse
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [232, 172.0]
+    rotation: 0
+    state: true
+- name: blocks_vector_source_x_0
+  id: blocks_vector_source_x
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    repeat: 'True'
+    tags: '[]'
+    type: float
+    vector: signalSource.generate_lfm_pulse(prf_khz, duty_cycle, amplitude, time_bandwidth_product,
+      pulse_center_freq_hz, bandwidth_khz_lower_limit, bandwidth_khz_upper_limit,
+      bandwidth_khz, num_samples_per_pulse, samp_rate)
+    vlen: num_samples_per_pulse
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [0, 156.0]
+    rotation: 0
+    state: enabled
+- name: blocks_vector_to_stream_0
+  id: blocks_vector_to_stream
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_items: num_samples_per_pulse
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [400, 416.0]
+    rotation: 0
+    state: true
+- name: epy_block_1
+  id: epy_block
+  parameters:
+    _source_code: "\"\"\"\nEmbedded Python Blocks:\n\nEach time this file is saved,\
+      \ GRC will instantiate the first class it finds\nto get ports and parameters\
+      \ of your block. The arguments to __init__  will\nbe the parameters. All of\
+      \ them are required to have default values!\n\"\"\"\n\nimport numpy as np\n\
+      from gnuradio import gr\n\n\nclass blk(gr.sync_block):  # other base classes\
+      \ are basic_block, decim_block, interp_block\n    \"\"\"Embedded Python Block\
+      \ example - a simple multiply const\"\"\"\n\n    # time-bandwidth product should\
+      \ be [75, 10,000] for LFM system\n    def __init__(\n        self,\n       \
+      \ prf_khz=3,\n        duty_cycle=0.06,\n        time_bandwidth_product=100,\n\
+      \        pulse_center_freq_hz=500,\n        bandwidth_khz_lower_limit=1,\n \
+      \       bandwidth_khz_upper_limit=100,\n        bandwidth_khz=50,\n        num_samples_per_pulse=128,\n\
+      \        samp_rate=100e3\n    ):  # only default arguments here\n        \"\"\
+      \"arguments to this function show up as parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n\
+      \            self,\n            name='Linear Frequency Modulation',   # will\
+      \ show up in GRC\n            in_sig=[],\n            out_sig=[np.complex64]\n\
+      \        )\n        # log levels: \n        #   trace:      Developing an algorithm\
+      \ and need to log specific values that it calculates\n        #   debug:   \
+      \   Used for debugging purposes, and should not be visible under usual usage\n\
+      \        #   info:       Information that does not require immediate attention,\
+      \ but might be of interest\n        #   warn:       Something might be wrong\
+      \ and it's probably worth looking into it\n        #   error:      An error\
+      \ has occurred. Meaning something definitely is wrong\n        #   critical:\
+      \   An error that cannot be recovered from\n        \n        self.log = gr.logger(self.alias())\
+      \ # initialize logger\n        # if an attribute with the same name as a parameter\
+      \ is found,\n        # a callback is registered (properties work, too).\n  \
+      \      \n        # (max_unambiguous_range = c / (2 * prf) - at 30 kHz, unambiguous\
+      \ to 5000 m, 3.1 mi)\n        self.prf_khz = prf_khz # pulse repetition frequency\n\
+      \        self.duty_cycle = duty_cycle # amount of time spent transmitting within\
+      \ a single pri\n        self.time_bandwidth_product = time_bandwidth_product\n\
+      \        self.pulse_center_freq_hz=pulse_center_freq_hz #center freq of the\
+      \ linearly-modulated pulse\n        self.pri_sec = 1/(self.prf_khz * 1e3) #\
+      \ pulse repetition interval - time per pulse\n        self.tau_sec = self.pri_sec\
+      \ * self.duty_cycle # pulse duration\n\n        # calculate bandwidth using\
+      \ TBP and Tau. Check resulting BW to ensure it's reasonable\n        self.bandwidth_khz\
+      \ = time_bandwidth_product / self.tau_sec / 1e3 \n\n        self.num_samples_per_pulse\
+      \ = num_samples_per_pulse # number of samples from both transmitting and non-transmitting\
+      \ portion of pulse\n        self.samp_rate = samp_rate # rate (Hz) the signal\
+      \ is sampled\n\n        if self.bandwidth_khz > bandwidth_khz_lower_limit or\
+      \ self.bandwidth_khz < bandwidth_khz_upper_limit:\n            self.log.error(f\"\
+      Selected bandwidth: {self.bandwidth_khz} kHz out of range\")\n        #else:\n\
+      \        #    self.log.info(f\"pulse bandwidth: {self.bandwidth_khz} kHz\")\n\
+      \n    \"\"\"\n    Function:    work\n    Description: Takes inputted in-phase\
+      \ (I) and quadrature (Q) channels \n                 and performs linear frequency\
+      \ modulation (i.e., the first step in pulse compression).\n                \
+      \ Refer to p. 790\n    \"\"\"\n    def work(self, output_items):\n    \n   \
+      \     num_samples_during_pulse_tx = int(self.samp_rate * self.tau_sec)\n   \
+      \     t = np.linspace(0, selt.tau_sec, num=num_samples_during_pulse_tx, endpoint=False)\n\
+      \        \n        # create the LFM pulse. Note that this is NOT a mathematical\
+      \ addition of two vectors, but a pythonic contatenation\n        # of two lists\n\
+      \        output_items[0][:] = \\\n            self.amplitude * np.exp(np.imag(1)\
+      \ * np.pi * self.bandwidth_khz * 1e3 / self.tau_sec * t) \\\n            + np.zeros(self.num_samples_per_pulse\
+      \ - num_samples_during_pulse_tx, dtype=np.complex_)\n        \n        self.log.error((f\"\
+      Type: {output_items[[0][0]}\")\n        \n        #self.log.info(f\"output_items[0]\
+      \ length: {len(output_items[0])}\")\n        return len(output_items[0])\n\n\
+      \n\n\n\n\n\n\n"
+    affinity: ''
+    alias: ''
+    bandwidth_khz: '50'
+    bandwidth_khz_lower_limit: '1'
+    bandwidth_khz_upper_limit: '100'
+    comment: ''
+    duty_cycle: '0.06'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_samples_per_pulse: '128'
+    prf_khz: prf_khz
+    pulse_center_freq_hz: '500'
+    time_bandwidth_product: '100'
+  states:
+    _io_cache: ('Linear Frequency Modulation', 'blk', [('prf_khz', '3'), ('duty_cycle',
+      '0.06'), ('time_bandwidth_product', '100'), ('pulse_center_freq_hz', '500'),
+      ('bandwidth_khz_lower_limit', '1'), ('bandwidth_khz_upper_limit', '100'), ('bandwidth_khz',
+      '50'), ('num_samples_per_pulse', '128')], [('0', 'complex', 1)], [('0', 'complex',
+      1)], 'Embedded Python Block example - a simple multiply const', ['bandwidth_khz',
+      'duty_cycle', 'num_samples_per_pulse', 'prf_khz', 'pulse_center_freq_hz', 'time_bandwidth_product'])
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [592, 260.0]
+    rotation: 0
+    state: enabled
+- name: import_0
+  id: import
+  parameters:
+    alias: ''
+    comment: ''
+    imports: import signalSource
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 92.0]
+    rotation: 0
+    state: true
+- name: qtgui_sink_x_0
+  id: qtgui_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    bw: samp_rate
+    comment: ''
+    fc: prf_khz * 1e3
+    fftsize: '2048'
+    gui_hint: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    name: '"LFM Pulse"'
+    plotconst: 'True'
+    plotfreq: 'True'
+    plottime: 'True'
+    plotwaterfall: 'True'
+    rate: '10'
+    showports: 'False'
+    showrf: 'False'
+    type: complex
+    wintype: window.WIN_BLACKMAN_hARRIS
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [888, 284.0]
+    rotation: 0
+    state: true
+
+connections:
+- [blocks_throttle_0, '0', blocks_delay_0, '0']
+- [blocks_vector_source_x_0, '0', blocks_throttle_0, '0']
+- [epy_block_1, '0', qtgui_sink_x_0, '0']
+
+metadata:
+  file_format: 1
