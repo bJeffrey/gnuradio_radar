@@ -90,7 +90,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [352, 12.0]
+    coordinate: [648, 76.0]
     rotation: 0
     state: true
 - name: fc_Hz
@@ -105,14 +105,14 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [984, 388.0]
+    coordinate: [960, 668.0]
     rotation: 0
     state: disabled
 - name: num_samples_per_pulse
   id: variable
   parameters:
     comment: ''
-    value: int(float(samp_rate) / float(prf_khz) * 1e3)
+    value: int(float(samp_rate) / (float(prf_khz) * 1e3))
   states:
     bus_sink: false
     bus_source: false
@@ -132,6 +132,18 @@ blocks:
     coordinate: [272, 12.0]
     rotation: 0
     state: true
+- name: pri_sec
+  id: variable
+  parameters:
+    comment: ''
+    value: 1 / (prf_khz * 1e3)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [352, 12.0]
+    rotation: 0
+    state: true
 - name: pulse_center_freq_hz
   id: variable
   parameters:
@@ -142,6 +154,18 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [696, 12.0]
+    rotation: 0
+    state: true
+- name: range_to_target
+  id: variable
+  parameters:
+    comment: ''
+    value: '500'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [528, 76.0]
     rotation: 0
     state: true
 - name: samp_rate
@@ -181,13 +205,13 @@ blocks:
     offset: '0'
     phase: '0'
     samp_rate: samp_rate
-    type: float
+    type: complex
     waveform: analog.GR_SQR_WAVE
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [136, 380.0]
+    coordinate: [48, 492.0]
     rotation: 0
     state: disabled
 - name: blocks_delay_0
@@ -195,8 +219,8 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: num_samp_delay = distance_traveled_m / speed_of_light_m_over_s
-    delay: int(100 / (3e8) * samp_rate)
+    comment: ''
+    delay: int(range_to_target / (3e8) * samp_rate)
     maxoutbuf: '0'
     minoutbuf: '0'
     num_ports: '1'
@@ -206,7 +230,25 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [440, 184.0]
+    coordinate: [440, 176.0]
+    rotation: 0
+    state: true
+- name: blocks_head_0
+  id: blocks_head
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_items: num_samples_per_pulse
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [760, 316.0]
     rotation: 0
     state: true
 - name: blocks_throttle_0
@@ -219,15 +261,34 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     samples_per_second: samp_rate
-    type: float
-    vlen: num_samples_per_pulse
+    type: complex
+    vlen: '1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [232, 172.0]
+    coordinate: [248, 172.0]
     rotation: 0
     state: true
+- name: blocks_throttle_0_0
+  id: blocks_throttle
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    ignoretag: 'True'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samples_per_second: samp_rate
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [320, 532.0]
+    rotation: 0
+    state: disabled
 - name: blocks_vector_source_x_0
   id: blocks_vector_source_x
   parameters:
@@ -238,11 +299,11 @@ blocks:
     minoutbuf: '0'
     repeat: 'True'
     tags: '[]'
-    type: float
+    type: complex
     vector: signalSource.generate_lfm_pulse(prf_khz, duty_cycle, amplitude, time_bandwidth_product,
       pulse_center_freq_hz, bandwidth_khz_lower_limit, bandwidth_khz_upper_limit,
       bandwidth_khz, num_samples_per_pulse, samp_rate)
-    vlen: num_samples_per_pulse
+    vlen: '1'
   states:
     bus_sink: false
     bus_source: false
@@ -258,16 +319,51 @@ blocks:
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
-    num_items: num_samples_per_pulse
-    type: float
+    num_items: '1'
+    type: complex
     vlen: '1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [400, 416.0]
+    coordinate: [592, 320.0]
     rotation: 0
-    state: true
+    state: enabled
+- name: epy_block_0
+  id: epy_block
+  parameters:
+    _source_code: "\"\"\"\nEmbedded Python Blocks:\n\nEach time this file is saved,\
+      \ GRC will instantiate the first class it finds\nto get ports and parameters\
+      \ of your block. The arguments to __init__  will\nbe the parameters. All of\
+      \ them are required to have default values!\n\"\"\"\n\nimport numpy as np\n\
+      from gnuradio import gr\n\n\nclass blk(gr.sync_block):  # other base classes\
+      \ are basic_block, decim_block, interp_block\n    \"\"\"Embedded Python Block\
+      \ example - a simple multiply const\"\"\"\n\n    def __init__(self, example_param=1.0):\
+      \  # only default arguments here\n        \"\"\"arguments to this function show\
+      \ up as parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n         \
+      \   self,\n            name='Embedded Python Block',   # will show up in GRC\n\
+      \            in_sig=[np.complex64],\n            out_sig=[np.complex64]\n  \
+      \      )\n        # if an attribute with the same name as a parameter is found,\n\
+      \        # a callback is registered (properties work, too).\n        self.example_param\
+      \ = example_param\n\n    def work(self, input_items, output_items):\n      \
+      \  \"\"\"example: multiply with constant\"\"\"\n        output_items[0][:] =\
+      \ input_items[0] * self.example_param\n        return len(output_items[0])\n"
+    affinity: ''
+    alias: ''
+    comment: ''
+    example_param: '1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    _io_cache: ('Embedded Python Block', 'blk', [('example_param', '1.0')], [('0',
+      'complex', 1)], [('0', 'complex', 1)], 'Embedded Python Block example - a simple
+      multiply const', ['example_param'])
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [504, 532.0]
+    rotation: 0
+    state: disabled
 - name: epy_block_1
   id: epy_block
   parameters:
@@ -349,9 +445,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [592, 260.0]
+    coordinate: [704, 628.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: import_0
   id: import
   parameters:
@@ -370,7 +466,7 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    bw: samp_rate
+    bw: 10e6
     comment: ''
     fc: prf_khz * 1e3
     fftsize: '2048'
@@ -381,7 +477,7 @@ blocks:
     plotconst: 'True'
     plotfreq: 'True'
     plottime: 'True'
-    plotwaterfall: 'True'
+    plotwaterfall: 'False'
     rate: '10'
     showports: 'False'
     showrf: 'False'
@@ -391,14 +487,78 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [888, 284.0]
+    coordinate: [928, 156.0]
     rotation: 0
-    state: true
+    state: enabled
+- name: qtgui_sink_x_0_0
+  id: qtgui_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    bw: 10e6
+    comment: ''
+    fc: prf_khz * 1e3
+    fftsize: '2048'
+    gui_hint: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    name: '"Sine Wave"'
+    plotconst: 'True'
+    plotfreq: 'True'
+    plottime: 'True'
+    plotwaterfall: 'False'
+    rate: '10'
+    showports: 'False'
+    showrf: 'False'
+    type: complex
+    wintype: window.WIN_BLACKMAN_hARRIS
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [752, 500.0]
+    rotation: 0
+    state: disabled
+- name: qtgui_sink_x_0_1
+  id: qtgui_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    bw: 10e6
+    comment: ''
+    fc: prf_khz * 1e3
+    fftsize: '2048'
+    gui_hint: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    name: '"Single LFM Pulse"'
+    plotconst: 'True'
+    plotfreq: 'True'
+    plottime: 'True'
+    plotwaterfall: 'False'
+    rate: '10'
+    showports: 'False'
+    showrf: 'False'
+    type: complex
+    wintype: window.WIN_BLACKMAN_hARRIS
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [928, 284.0]
+    rotation: 0
+    state: enabled
 
 connections:
+- [analog_sig_source_x_0, '0', blocks_throttle_0_0, '0']
+- [blocks_delay_0, '0', blocks_vector_to_stream_0, '0']
+- [blocks_delay_0, '0', qtgui_sink_x_0, '0']
+- [blocks_head_0, '0', qtgui_sink_x_0_1, '0']
 - [blocks_throttle_0, '0', blocks_delay_0, '0']
+- [blocks_throttle_0_0, '0', epy_block_0, '0']
 - [blocks_vector_source_x_0, '0', blocks_throttle_0, '0']
-- [epy_block_1, '0', qtgui_sink_x_0, '0']
+- [blocks_vector_to_stream_0, '0', blocks_head_0, '0']
+- [epy_block_0, '0', qtgui_sink_x_0_0, '0']
 
 metadata:
   file_format: 1

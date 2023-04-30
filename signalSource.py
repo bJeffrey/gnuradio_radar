@@ -16,7 +16,7 @@ def generate_lfm_pulse( \
     bandwidth_khz_lower_limit=1.0,
     bandwidth_khz_upper_limit=100.0,
     bandwidth_khz=50.0,
-    num_samples_per_pulse=128,
+    num_samples_per_pulse=2048,
     samp_rate=4.0e6
     ): 
 
@@ -55,8 +55,12 @@ def generate_lfm_pulse( \
     
     t = np.linspace(0, tau_sec, num=num_samples_during_pulse_tx, endpoint=False, dtype=complex)
     
+    num_samples_during_no_tx = num_samples_per_pulse - num_samples_during_pulse_tx
+    #num_samples_during_no_tx = int((pri_sec - tau_sec) * samp_rate)
+
     #print(f"t length: {len(t)}")
     #print(f"num_samples_during_pulse_tx: {num_samples_during_pulse_tx}")
+    #print(f"num_samples_during_no_tx: {num_samples_during_no_tx}")
 
     # create the LFM pulse.
     
@@ -64,7 +68,7 @@ def generate_lfm_pulse( \
     #print(f"second part type: {type(second)} \t size: {np.shape(second)}")
     lfm_pulse = np.concatenate( \
         (amplitude * np.exp(np.imag(1) * np.pi * bandwidth_khz * 1e3 / tau_sec * t), \
-        np.zeros(num_samples_per_pulse - num_samples_during_pulse_tx, dtype=np.complex_)) \
+        np.zeros(num_samples_during_no_tx, dtype=np.complex_)) \
     )
 
     #print(f"Type: {lfm_pulse[0]}")
@@ -72,5 +76,18 @@ def generate_lfm_pulse( \
     #log.info(f"output_items[0] length: {len(output_items[0])}")
     return lfm_pulse
 
+def generate_sin(samp_rate, num_samples_per_pulse):
+
+    # np.singlecomplex and np.complex64 both print with type <class 'numpy.complex64'>
+    #t = np.linspace(0, 1.0 / 3000.0, num_samples_per_pulse, endpoint=False, dtype=np.singlecomplex)
+    t = np.linspace(0, 1.0 / 3000.0, num_samples_per_pulse, endpoint=False, dtype=np.complex64)
+    x = np.sin(t)
+    print(f"x type: {type(x)} \t x[0] type: {type(x[0])} \t size: {np.shape(x)}")
+    return x
+
 if __name__ == "__main__":
-    lfm_pulse = generate_lfm_pulse()
+    samp_rate = 4e6
+    prf_khz = 3
+
+    # lfm_pulse = generate_lfm_pulse()
+    sin_wave = generate_sin(samp_rate, int(float(samp_rate) / (float(prf_khz) * 1e3)))
