@@ -5,7 +5,8 @@ Description:    Sets a linear frequency modulated pulse  with characteristics de
 '''
 
 import numpy as np
-from gnuradio import gr
+from gnuradio import gr # This import, without using gnu logging, is likely unnecessary
+import matplotlib.pyplot as plt
 
 def generate_lfm_pulse( \
     prf_khz=3.0,
@@ -70,8 +71,7 @@ def generate_lfm_pulse( \
         (amplitude * np.exp(np.imag(1) * np.pi * bandwidth_khz * 1e3 / tau_sec * t), \
         np.zeros(num_samples_during_no_tx, dtype=np.complex_)) \
     )
-
-    #print(f"Type: {lfm_pulse[0]}")
+    #print(f"Type: {type(np.real(lfm_pulse[0]))}")
     
     #log.info(f"output_items[0] length: {len(output_items[0])}")
     return lfm_pulse
@@ -85,9 +85,25 @@ def generate_sin(samp_rate, num_samples_per_pulse):
     print(f"x type: {type(x)} \t x[0] type: {type(x[0])} \t size: {np.shape(x)}")
     return x
 
-if __name__ == "__main__":
-    samp_rate = 4e6
-    prf_khz = 3
+def generate_plots(signal, samp_rate):
 
-    # lfm_pulse = generate_lfm_pulse()
-    sin_wave = generate_sin(samp_rate, int(float(samp_rate) / (float(prf_khz) * 1e3)))
+    #t = np.linspace(0.0, 1.0/(prf_khz * 1.0e3), num=len(signal), endpoint=False, dtype=float)
+    t = np.linspace(0.0, len(signal) / samp_rate, num=len(signal), endpoint=False, dtype=float)
+    print(len(t))
+    plt.plot(t, np.real(signal))
+    plt.ylabel('Amplitude (V)')
+    plt.ylabel('time (sec)')
+    plt.show()
+
+if __name__ == "__main__":
+    samp_rate = 4.0e6
+
+    lfm_pulse = generate_lfm_pulse()
+
+    # generate very simple signal for testing
+    #sin_wave = generate_sin(samp_rate, int(float(samp_rate) / (float(prf_khz) * 1e3)))
+
+    generate_plots(lfm_pulse, samp_rate)
+
+
+
