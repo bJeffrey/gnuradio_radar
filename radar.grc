@@ -37,7 +37,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '1.0'
+    value: '2.0'
   states:
     bus_sink: false
     bus_source: false
@@ -73,7 +73,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '100.0'
+    value: '6000.0'
   states:
     bus_sink: false
     bus_source: false
@@ -117,7 +117,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [720, 200.0]
+    coordinate: [1008, 76.0]
     rotation: 0
     state: true
 - name: num_samples_during_pulse_tx
@@ -266,7 +266,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [592, 176.0]
+    coordinate: [792, 192.0]
     rotation: 0
     state: true
 - name: blocks_head_0
@@ -298,12 +298,12 @@ blocks:
     minoutbuf: '0'
     samples_per_second: samp_rate
     type: complex
-    vlen: '1'
+    vlen: num_samples_per_pulse
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [408, 172.0]
+    coordinate: [376, 180.0]
     rotation: 0
     state: true
 - name: blocks_throttle_0_0
@@ -365,6 +365,24 @@ blocks:
     coordinate: [600, 400.0]
     rotation: 0
     state: disabled
+- name: blocks_vector_to_stream_0_0
+  id: blocks_vector_to_stream
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_items: num_samples_per_pulse
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [584, 192.0]
+    rotation: 0
+    state: enabled
 - name: epy_block_0
   id: epy_block
   parameters:
@@ -420,8 +438,8 @@ blocks:
       \    ):  # only default arguments here\n        \"\"\"arguments to this function\
       \ show up as parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n    \
       \        self,\n            name='Linear Frequency Modulation',   # will show\
-      \ up in GRC\n            in_sig=[],\n            out_sig=[np.complex64]\n  \
-      \      )\n        # log levels: \n        #   trace:      Developing an algorithm\
+      \ up in GRC\n            in_sig=[],\n            out_sig=[(np.complex64,1333)]\n\
+      \        )\n        # log levels: \n        #   trace:      Developing an algorithm\
       \ and need to log specific values that it calculates\n        #   debug:   \
       \   Used for debugging purposes, and should not be visible under usual usage\n\
       \        #   info:       Information that does not require immediate attention,\
@@ -441,8 +459,8 @@ blocks:
       \n        # calculate bandwidth using TBP and Tau. Check resulting BW to ensure\
       \ it's reasonable\n        self.bandwidth_khz = bandwidth_khz\n        self.samp_rate\
       \ = samp_rate # rate (Hz) the signal is sampled\n        self.num_samples_per_pulse\
-      \ = num_samples_per_pulse\n\n        self.num_samples_during_pulse_tx = int(num_samples_per_pulse\
-      \ * duty_cycle)\n        \n        self.num_samples_during_pulse_silence = num_samples_during_pulse_silence\n\
+      \ = num_samples_per_pulse\n\n        self.num_samples_during_pulse_tx = num_samples_during_pulse_tx\n\
+      \        \n        self.num_samples_during_pulse_silence = num_samples_during_pulse_silence\n\
       \        \n        self.amplitude = amplitude\n\n        if self.bandwidth_khz\
       \ > bandwidth_khz_lower_limit or self.bandwidth_khz < bandwidth_khz_upper_limit:\n\
       \            self.log.error(f\"Selected bandwidth: {self.bandwidth_khz} kHz\
@@ -451,15 +469,19 @@ blocks:
       \ is NOT a mathematical addition of two vectors, but a pythonic contatenation\n\
       \        self.t = np.linspace(0, tau_sec, num=num_samples_during_pulse_tx, endpoint=False)\n\
       \n        self.lfm_waveform = np.zeros(num_samples_per_pulse, dtype=np.complex64)\n\
-      \        self.lfm_waveform[0:self.num_samples_during_pulse_tx] = np.complex64(self.amplitude\
-      \ * np.exp(1j * np.pi * self.bandwidth_khz * 1e3 / self.tau_sec * self.t))\n\
-      \n        #self.signal = np.zeros(num_samples_per_pulse, dtype=np.complex64)\n\
+      \        signal = np.complex64(self.amplitude * np.exp(1j * np.pi * self.bandwidth_khz\
+      \ * 1e3 / self.tau_sec * self.t))\n        space_for_signal = self.lfm_waveform[0:self.num_samples_during_pulse_tx]\n\
+      \        self.log.info(f\"signal len: {len(signal)}\")\n        self.log.info(f\"\
+      space_for_signal = {len(space_for_signal)}\")\n\n\n        self.lfm_waveform[0:self.num_samples_during_pulse_tx]\
+      \ = signal\n        self.log.info(f\"lfm_waveform index 39: {self.lfm_waveform[39]}\"\
+      )\n        self.log.info(f\"size of waveform: {len(self.lfm_waveform)}\")\n\
+      \        #self.signal = np.zeros(num_samples_per_pulse, dtype=np.complex64)\n\
       \        #self.signal[0:num_samples_during_pulse_tx] = np.complex64(amplitude\
       \ * np.exp(1j * np.pi * bandwidth_khz * 1e3 / tau_sec * t))\n\n    \"\"\"\n\
       \    Function:    work\n    Description: Takes inputted in-phase (I) and quadrature\
       \ (Q) channels \n                 and performs linear frequency modulation (i.e.,\
       \ the first step in pulse compression).\n                 Refer to p. 790\n\
-      \    \"\"\"\n    def work(self, output_items):\n    \n        #self.log.error((f\"\
+      \    \"\"\"\n    def work(self, input_items, output_items):\n    \n        #self.log.error((f\"\
       Type: {output_items[[0][0]]}\")\n\n        output_items[0][:] = self.lfm_waveform\n\
       \n        #self.log.info(f\"output_items[0] length: {len(output_items[0])}\"\
       )\n        return len(output_items[0])\n\n\n\n\n\n\n\n\n"
@@ -473,12 +495,13 @@ blocks:
     duty_cycle: duty_cycle
     maxoutbuf: '0'
     minoutbuf: '0'
-    num_samples_during_pulse_tx: '6'
+    num_samples_during_pulse_silence: num_samples_during_pulse_silence
+    num_samples_during_pulse_tx: num_samples_during_pulse_tx
     num_samples_per_pulse: num_samples_per_pulse
     prf_khz: prf_khz
     pri_sec: pri_sec
     pulse_center_freq_hz: pulse_center_freq_hz
-    samp_rate: '100000.0'
+    samp_rate: samp_rate
     t: np.linspace(0, tau_sec, num=num_samples_during_pulse_tx, endpoint=False)
     tau_sec: tau_sec
     time_bandwidth_product: time_bandwidth_product
@@ -487,12 +510,13 @@ blocks:
       '0.001'), ('duty_cycle', '0.06'), ('tau_sec', '0.01'), ('time_bandwidth_product',
       '100'), ('pulse_center_freq_hz', '500'), ('bandwidth_khz_lower_limit', '1'),
       ('bandwidth_khz_upper_limit', '100'), ('bandwidth_khz', '50'), ('num_samples_per_pulse',
-      '128'), ('num_samples_during_pulse_tx', '6'), ('samp_rate', '100000.0'), ('t',
-      'array([0.        , 0.00166667, 0.00333333, 0.005     , 0.00666667,\n       0.00833333])'),
-      ('amplitude', '1.0')], [], [('0', 'complex', 1)], 'Embedded Python Block example
-      - a simple multiply const', ['bandwidth_khz', 'duty_cycle', 'num_samples_during_pulse_tx',
-      'num_samples_per_pulse', 'prf_khz', 'pri_sec', 'pulse_center_freq_hz', 'samp_rate',
-      't', 'tau_sec', 'time_bandwidth_product'])
+      '128'), ('num_samples_during_pulse_tx', '6'), ('num_samples_during_pulse_silence',
+      '122'), ('samp_rate', '100000.0'), ('t', 'array([0.        , 0.00166667, 0.00333333,
+      0.005     , 0.00666667,\n       0.00833333])'), ('amplitude', '1.0')], [], [('0',
+      'complex', 1333)], 'Embedded Python Block example - a simple multiply const',
+      ['amplitude', 'bandwidth_khz', 'duty_cycle', 'num_samples_during_pulse_silence',
+      'num_samples_during_pulse_tx', 'num_samples_per_pulse', 'prf_khz', 'pri_sec',
+      'pulse_center_freq_hz', 'samp_rate', 't', 'tau_sec', 'time_bandwidth_product'])
     bus_sink: false
     bus_source: false
     bus_structure: null
@@ -563,7 +587,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [760, 148.0]
+    coordinate: [104, 84.0]
     rotation: 0
     state: true
 - name: qtgui_sink_x_0
@@ -592,7 +616,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [968, 156.0]
+    coordinate: [968, 172.0]
     rotation: 0
     state: enabled
 - name: qtgui_sink_x_0_0
@@ -660,9 +684,10 @@ connections:
 - [blocks_delay_0, '0', epy_block_2, '0']
 - [blocks_delay_0, '0', qtgui_sink_x_0, '0']
 - [blocks_head_0, '0', qtgui_sink_x_0_1, '0']
-- [blocks_throttle_0, '0', blocks_delay_0, '0']
+- [blocks_throttle_0, '0', blocks_vector_to_stream_0_0, '0']
 - [blocks_throttle_0_0, '0', epy_block_0, '0']
 - [blocks_vector_to_stream_0, '0', blocks_head_0, '0']
+- [blocks_vector_to_stream_0_0, '0', blocks_delay_0, '0']
 - [epy_block_0, '0', qtgui_sink_x_0_0, '0']
 - [epy_block_1, '0', blocks_throttle_0, '0']
 

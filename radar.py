@@ -32,8 +32,8 @@ import signal
 from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
+import numpy as np
 import radar_epy_block_1 as epy_block_1  # embedded python block
-import signalSource
 
 
 
@@ -77,16 +77,19 @@ class radar(gr.top_block, Qt.QWidget):
         ##################################################
         self.samp_rate = samp_rate = 4e6
         self.prf_khz = prf_khz = 3
-        self.time_bandwidth_product = time_bandwidth_product = 100.0
-        self.range_to_target = range_to_target = 500
-        self.pulse_center_freq_hz = pulse_center_freq_hz = 500.0
-        self.pri_sec = pri_sec = 1 / (prf_khz * 1e3)
+        self.pri_sec = pri_sec = 1/(prf_khz * 1e3)
         self.num_samples_per_pulse = num_samples_per_pulse = int(float(samp_rate) / (float(prf_khz) * 1e3))
         self.duty_cycle = duty_cycle = 0.06
-        self.bandwidth_khz_upper_limit = bandwidth_khz_upper_limit = 100.0
+        self.time_bandwidth_product = time_bandwidth_product = 100.0
+        self.tau_sec = tau_sec = pri_sec * duty_cycle
+        self.num_samples_during_pulse_tx = num_samples_during_pulse_tx = int(num_samples_per_pulse * duty_cycle)
+        self.range_to_target = range_to_target = 500
+        self.pulse_center_freq_hz = pulse_center_freq_hz = 500.0
+        self.num_samples_during_pulse_silence = num_samples_during_pulse_silence = num_samples_per_pulse - num_samples_during_pulse_tx
+        self.bandwidth_khz_upper_limit = bandwidth_khz_upper_limit = 6000.0
         self.bandwidth_khz_lower_limit = bandwidth_khz_lower_limit = 1.0
-        self.bandwidth_khz = bandwidth_khz = 50.0
-        self.amplitude = amplitude = 1.0
+        self.bandwidth_khz = bandwidth_khz = time_bandwidth_product / tau_sec / 1e3
+        self.amplitude = amplitude = 2.0
 
         ##################################################
         # Blocks
@@ -109,9 +112,9 @@ class radar(gr.top_block, Qt.QWidget):
         self.qtgui_sink_x_0.enable_rf_freq(False)
 
         self.top_layout.addWidget(self._qtgui_sink_x_0_win)
-        self.epy_block_1 = epy_block_1.blk(prf_khz=prf_khz, duty_cycle=0.06, time_bandwidth_product=100, pulse_center_freq_hz=500, bandwidth_khz_lower_limit=1, bandwidth_khz_upper_limit=100, bandwidth_khz=50, num_samples_per_pulse=128, samp_rate=100000.0)
-        self.blocks_vector_source_x_0 = blocks.vector_source_c(signalSource.generate_lfm_pulse(prf_khz, duty_cycle, amplitude, time_bandwidth_product, pulse_center_freq_hz, bandwidth_khz_lower_limit, bandwidth_khz_upper_limit, bandwidth_khz, num_samples_per_pulse, samp_rate), True, 1, [])
-        self.blocks_throttle_0 = blocks.throttle(gr.sizeof_gr_complex*1, samp_rate,True)
+        self.epy_block_1 = epy_block_1.blk(prf_khz=prf_khz, pri_sec=pri_sec, duty_cycle=duty_cycle, tau_sec=tau_sec, time_bandwidth_product=time_bandwidth_product, pulse_center_freq_hz=pulse_center_freq_hz, bandwidth_khz_lower_limit=bandwidth_khz_lower_limit, bandwidth_khz_upper_limit=bandwidth_khz_upper_limit, bandwidth_khz=bandwidth_khz, num_samples_per_pulse=num_samples_per_pulse, num_samples_during_pulse_tx=num_samples_during_pulse_tx, num_samples_during_pulse_silence=num_samples_during_pulse_silence, samp_rate=samp_rate, t=np.linspace(0, tau_sec, num=num_samples_during_pulse_tx, endpoint=False), amplitude=amplitude)
+        self.blocks_vector_to_stream_0_0 = blocks.vector_to_stream(gr.sizeof_gr_complex*1, num_samples_per_pulse)
+        self.blocks_throttle_0 = blocks.throttle(gr.sizeof_gr_complex*num_samples_per_pulse, samp_rate,True)
         self.blocks_delay_0 = blocks.delay(gr.sizeof_gr_complex*1, int(range_to_target / (3e8) * samp_rate))
 
 
@@ -119,8 +122,8 @@ class radar(gr.top_block, Qt.QWidget):
         # Connections
         ##################################################
         self.connect((self.blocks_delay_0, 0), (self.qtgui_sink_x_0, 0))
-        self.connect((self.blocks_throttle_0, 0), (self.blocks_delay_0, 0))
-        self.connect((self.blocks_vector_source_x_0, 0), (self.epy_block_1, 0))
+        self.connect((self.blocks_throttle_0, 0), (self.blocks_vector_to_stream_0_0, 0))
+        self.connect((self.blocks_vector_to_stream_0_0, 0), (self.blocks_delay_0, 0))
         self.connect((self.epy_block_1, 0), (self.blocks_throttle_0, 0))
 
 
@@ -140,7 +143,7 @@ class radar(gr.top_block, Qt.QWidget):
         self.set_num_samples_per_pulse(int(float(self.samp_rate) / (float(self.prf_khz) * 1e3)))
         self.blocks_delay_0.set_dly(int(self.range_to_target / (3e8) * self.samp_rate))
         self.blocks_throttle_0.set_sample_rate(self.samp_rate)
-        self.blocks_vector_source_x_0.set_data(signalSource.generate_lfm_pulse(self.prf_khz, self.duty_cycle, self.amplitude, self.time_bandwidth_product, self.pulse_center_freq_hz, self.bandwidth_khz_lower_limit, self.bandwidth_khz_upper_limit, self.bandwidth_khz, self.num_samples_per_pulse, self.samp_rate), [])
+        self.epy_block_1.samp_rate = self.samp_rate
 
     def get_prf_khz(self):
         return self.prf_khz
@@ -148,17 +151,61 @@ class radar(gr.top_block, Qt.QWidget):
     def set_prf_khz(self, prf_khz):
         self.prf_khz = prf_khz
         self.set_num_samples_per_pulse(int(float(self.samp_rate) / (float(self.prf_khz) * 1e3)))
-        self.set_pri_sec(1 / (self.prf_khz * 1e3))
-        self.blocks_vector_source_x_0.set_data(signalSource.generate_lfm_pulse(self.prf_khz, self.duty_cycle, self.amplitude, self.time_bandwidth_product, self.pulse_center_freq_hz, self.bandwidth_khz_lower_limit, self.bandwidth_khz_upper_limit, self.bandwidth_khz, self.num_samples_per_pulse, self.samp_rate), [])
+        self.set_pri_sec(1/(self.prf_khz * 1e3))
         self.epy_block_1.prf_khz = self.prf_khz
         self.qtgui_sink_x_0.set_frequency_range(self.prf_khz * 1e3, 10e6)
+
+    def get_pri_sec(self):
+        return self.pri_sec
+
+    def set_pri_sec(self, pri_sec):
+        self.pri_sec = pri_sec
+        self.set_tau_sec(self.pri_sec * self.duty_cycle)
+        self.epy_block_1.pri_sec = self.pri_sec
+
+    def get_num_samples_per_pulse(self):
+        return self.num_samples_per_pulse
+
+    def set_num_samples_per_pulse(self, num_samples_per_pulse):
+        self.num_samples_per_pulse = num_samples_per_pulse
+        self.set_num_samples_during_pulse_silence(self.num_samples_per_pulse - self.num_samples_during_pulse_tx)
+        self.set_num_samples_during_pulse_tx(int(self.num_samples_per_pulse * self.duty_cycle))
+        self.epy_block_1.num_samples_per_pulse = self.num_samples_per_pulse
+
+    def get_duty_cycle(self):
+        return self.duty_cycle
+
+    def set_duty_cycle(self, duty_cycle):
+        self.duty_cycle = duty_cycle
+        self.set_num_samples_during_pulse_tx(int(self.num_samples_per_pulse * self.duty_cycle))
+        self.set_tau_sec(self.pri_sec * self.duty_cycle)
+        self.epy_block_1.duty_cycle = self.duty_cycle
 
     def get_time_bandwidth_product(self):
         return self.time_bandwidth_product
 
     def set_time_bandwidth_product(self, time_bandwidth_product):
         self.time_bandwidth_product = time_bandwidth_product
-        self.blocks_vector_source_x_0.set_data(signalSource.generate_lfm_pulse(self.prf_khz, self.duty_cycle, self.amplitude, self.time_bandwidth_product, self.pulse_center_freq_hz, self.bandwidth_khz_lower_limit, self.bandwidth_khz_upper_limit, self.bandwidth_khz, self.num_samples_per_pulse, self.samp_rate), [])
+        self.set_bandwidth_khz(self.time_bandwidth_product / self.tau_sec / 1e3)
+        self.epy_block_1.time_bandwidth_product = self.time_bandwidth_product
+
+    def get_tau_sec(self):
+        return self.tau_sec
+
+    def set_tau_sec(self, tau_sec):
+        self.tau_sec = tau_sec
+        self.set_bandwidth_khz(self.time_bandwidth_product / self.tau_sec / 1e3)
+        self.epy_block_1.t = np.linspace(0, self.tau_sec, num=self.num_samples_during_pulse_tx, endpoint=False)
+        self.epy_block_1.tau_sec = self.tau_sec
+
+    def get_num_samples_during_pulse_tx(self):
+        return self.num_samples_during_pulse_tx
+
+    def set_num_samples_during_pulse_tx(self, num_samples_during_pulse_tx):
+        self.num_samples_during_pulse_tx = num_samples_during_pulse_tx
+        self.set_num_samples_during_pulse_silence(self.num_samples_per_pulse - self.num_samples_during_pulse_tx)
+        self.epy_block_1.num_samples_during_pulse_tx = self.num_samples_during_pulse_tx
+        self.epy_block_1.t = np.linspace(0, self.tau_sec, num=self.num_samples_during_pulse_tx, endpoint=False)
 
     def get_range_to_target(self):
         return self.range_to_target
@@ -172,55 +219,40 @@ class radar(gr.top_block, Qt.QWidget):
 
     def set_pulse_center_freq_hz(self, pulse_center_freq_hz):
         self.pulse_center_freq_hz = pulse_center_freq_hz
-        self.blocks_vector_source_x_0.set_data(signalSource.generate_lfm_pulse(self.prf_khz, self.duty_cycle, self.amplitude, self.time_bandwidth_product, self.pulse_center_freq_hz, self.bandwidth_khz_lower_limit, self.bandwidth_khz_upper_limit, self.bandwidth_khz, self.num_samples_per_pulse, self.samp_rate), [])
+        self.epy_block_1.pulse_center_freq_hz = self.pulse_center_freq_hz
 
-    def get_pri_sec(self):
-        return self.pri_sec
+    def get_num_samples_during_pulse_silence(self):
+        return self.num_samples_during_pulse_silence
 
-    def set_pri_sec(self, pri_sec):
-        self.pri_sec = pri_sec
-
-    def get_num_samples_per_pulse(self):
-        return self.num_samples_per_pulse
-
-    def set_num_samples_per_pulse(self, num_samples_per_pulse):
-        self.num_samples_per_pulse = num_samples_per_pulse
-        self.blocks_vector_source_x_0.set_data(signalSource.generate_lfm_pulse(self.prf_khz, self.duty_cycle, self.amplitude, self.time_bandwidth_product, self.pulse_center_freq_hz, self.bandwidth_khz_lower_limit, self.bandwidth_khz_upper_limit, self.bandwidth_khz, self.num_samples_per_pulse, self.samp_rate), [])
-
-    def get_duty_cycle(self):
-        return self.duty_cycle
-
-    def set_duty_cycle(self, duty_cycle):
-        self.duty_cycle = duty_cycle
-        self.blocks_vector_source_x_0.set_data(signalSource.generate_lfm_pulse(self.prf_khz, self.duty_cycle, self.amplitude, self.time_bandwidth_product, self.pulse_center_freq_hz, self.bandwidth_khz_lower_limit, self.bandwidth_khz_upper_limit, self.bandwidth_khz, self.num_samples_per_pulse, self.samp_rate), [])
+    def set_num_samples_during_pulse_silence(self, num_samples_during_pulse_silence):
+        self.num_samples_during_pulse_silence = num_samples_during_pulse_silence
+        self.epy_block_1.num_samples_during_pulse_silence = self.num_samples_during_pulse_silence
 
     def get_bandwidth_khz_upper_limit(self):
         return self.bandwidth_khz_upper_limit
 
     def set_bandwidth_khz_upper_limit(self, bandwidth_khz_upper_limit):
         self.bandwidth_khz_upper_limit = bandwidth_khz_upper_limit
-        self.blocks_vector_source_x_0.set_data(signalSource.generate_lfm_pulse(self.prf_khz, self.duty_cycle, self.amplitude, self.time_bandwidth_product, self.pulse_center_freq_hz, self.bandwidth_khz_lower_limit, self.bandwidth_khz_upper_limit, self.bandwidth_khz, self.num_samples_per_pulse, self.samp_rate), [])
 
     def get_bandwidth_khz_lower_limit(self):
         return self.bandwidth_khz_lower_limit
 
     def set_bandwidth_khz_lower_limit(self, bandwidth_khz_lower_limit):
         self.bandwidth_khz_lower_limit = bandwidth_khz_lower_limit
-        self.blocks_vector_source_x_0.set_data(signalSource.generate_lfm_pulse(self.prf_khz, self.duty_cycle, self.amplitude, self.time_bandwidth_product, self.pulse_center_freq_hz, self.bandwidth_khz_lower_limit, self.bandwidth_khz_upper_limit, self.bandwidth_khz, self.num_samples_per_pulse, self.samp_rate), [])
 
     def get_bandwidth_khz(self):
         return self.bandwidth_khz
 
     def set_bandwidth_khz(self, bandwidth_khz):
         self.bandwidth_khz = bandwidth_khz
-        self.blocks_vector_source_x_0.set_data(signalSource.generate_lfm_pulse(self.prf_khz, self.duty_cycle, self.amplitude, self.time_bandwidth_product, self.pulse_center_freq_hz, self.bandwidth_khz_lower_limit, self.bandwidth_khz_upper_limit, self.bandwidth_khz, self.num_samples_per_pulse, self.samp_rate), [])
+        self.epy_block_1.bandwidth_khz = self.bandwidth_khz
 
     def get_amplitude(self):
         return self.amplitude
 
     def set_amplitude(self, amplitude):
         self.amplitude = amplitude
-        self.blocks_vector_source_x_0.set_data(signalSource.generate_lfm_pulse(self.prf_khz, self.duty_cycle, self.amplitude, self.time_bandwidth_product, self.pulse_center_freq_hz, self.bandwidth_khz_lower_limit, self.bandwidth_khz_upper_limit, self.bandwidth_khz, self.num_samples_per_pulse, self.samp_rate), [])
+        self.epy_block_1.amplitude = self.amplitude
 
 
 
