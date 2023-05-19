@@ -453,38 +453,29 @@ blocks:
       \ to 5000 m, 3.1 mi)\n        self.prf_khz = prf_khz # pulse repetition frequency\n\
       \        self.pri_sec = pri_sec # pulse repetition interval - time per pulse\n\
       \        self.duty_cycle = duty_cycle # amount of time spent transmitting within\
-      \ a single pri\n        self.time_bandwidth_product = time_bandwidth_product\n\
-      \        self.pulse_center_freq_hz=pulse_center_freq_hz #center freq of the\
-      \ linearly-modulated pulse\n\n        self.tau_sec = tau_sec # pulse duration\n\
-      \n        # calculate bandwidth using TBP and Tau. Check resulting BW to ensure\
-      \ it's reasonable\n        self.bandwidth_khz = bandwidth_khz\n        self.samp_rate\
-      \ = samp_rate # rate (Hz) the signal is sampled\n        self.num_samples_per_pulse\
-      \ = num_samples_per_pulse\n\n        self.num_samples_during_pulse_tx = num_samples_during_pulse_tx\n\
-      \        \n        self.num_samples_during_pulse_silence = num_samples_during_pulse_silence\n\
-      \        \n        self.amplitude = amplitude\n\n        if self.bandwidth_khz\
-      \ > bandwidth_khz_lower_limit or self.bandwidth_khz < bandwidth_khz_upper_limit:\n\
-      \            self.log.error(f\"Selected bandwidth: {self.bandwidth_khz} kHz\
-      \ out of range\")\n        #else:\n        #    self.log.info(f\"pulse bandwidth:\
-      \ {self.bandwidth_khz} kHz\")\n\n        # create the LFM pulse. Note that this\
-      \ is NOT a mathematical addition of two vectors, but a pythonic contatenation\n\
-      \        self.t = np.linspace(0, tau_sec, num=num_samples_during_pulse_tx, endpoint=False)\n\
-      \n        self.lfm_waveform = np.zeros(num_samples_per_pulse, dtype=np.complex64)\n\
-      \        signal = np.complex64(self.amplitude * np.exp(1j * np.pi * self.bandwidth_khz\
-      \ * 1e3 / self.tau_sec * self.t))\n        space_for_signal = self.lfm_waveform[0:self.num_samples_during_pulse_tx]\n\
-      \        self.log.info(f\"signal len: {len(signal)}\")\n        self.log.info(f\"\
-      space_for_signal = {len(space_for_signal)}\")\n\n\n        self.lfm_waveform[0:self.num_samples_during_pulse_tx]\
-      \ = signal\n        self.log.info(f\"lfm_waveform index 39: {self.lfm_waveform[39]}\"\
-      )\n        self.log.info(f\"size of waveform: {len(self.lfm_waveform)}\")\n\
-      \        #self.signal = np.zeros(num_samples_per_pulse, dtype=np.complex64)\n\
-      \        #self.signal[0:num_samples_during_pulse_tx] = np.complex64(amplitude\
-      \ * np.exp(1j * np.pi * bandwidth_khz * 1e3 / tau_sec * t))\n\n    \"\"\"\n\
-      \    Function:    work\n    Description: Takes inputted in-phase (I) and quadrature\
-      \ (Q) channels \n                 and performs linear frequency modulation (i.e.,\
-      \ the first step in pulse compression).\n                 Refer to p. 790\n\
-      \    \"\"\"\n    def work(self, input_items, output_items):\n    \n        #self.log.error((f\"\
-      Type: {output_items[[0][0]]}\")\n\n        output_items[0][:] = self.lfm_waveform\n\
-      \n        #self.log.info(f\"output_items[0] length: {len(output_items[0])}\"\
-      )\n        return len(output_items[0])\n\n\n\n\n\n\n\n\n"
+      \ a single pri\n        self.time_bandwidth_product = time_bandwidth_product\
+      \ # tau_sec * bandwidth_khz * 1e3\n        self.pulse_center_freq_hz=pulse_center_freq_hz\
+      \ #center freq of the linearly-modulated pulse\n\n        self.tau_sec = tau_sec\
+      \ # pulse duration\n\n        # calculate bandwidth using TBP and Tau. Check\
+      \ resulting BW to ensure it's reasonable\n        self.bandwidth_khz = bandwidth_khz\n\
+      \        self.samp_rate = samp_rate # rate (Hz) the signal is sampled\n    \
+      \    self.num_samples_per_pulse = num_samples_per_pulse\n\n        self.num_samples_during_pulse_tx\
+      \ = num_samples_during_pulse_tx\n\n        self.num_samples_during_pulse_silence\
+      \ = num_samples_during_pulse_silence\n        \n        self.amplitude = amplitude\n\
+      \n        if self.bandwidth_khz > bandwidth_khz_lower_limit or self.bandwidth_khz\
+      \ < bandwidth_khz_upper_limit:\n            self.log.error(f\"Selected bandwidth:\
+      \ {self.bandwidth_khz} kHz out of range\")\n\n        # create the LFM pulse.\
+      \ Note that this is NOT a mathematical addition of two vectors, but a pythonic\
+      \ contatenation\n        self.t = np.linspace(0, tau_sec, num=num_samples_during_pulse_tx,\
+      \ endpoint=False)\n\n        self.lfm_waveform = np.zeros(num_samples_per_pulse,\
+      \ dtype=np.complex64)\n        self.lfm_waveform[0:self.num_samples_during_pulse_tx]\
+      \ = np.complex64(self.amplitude * np.exp(1j * np.pi * self.bandwidth_khz * 1e3\
+      \ / self.tau_sec * self.t))\n\n    \"\"\"\n    Function:    work\n    Description:\
+      \ Takes inputted in-phase (I) and quadrature (Q) channels \n               \
+      \  and performs linear frequency modulation (i.e., the first step in pulse compression).\n\
+      \                 Refer to p. 790\n    \"\"\"\n    def work(self, input_items,\
+      \ output_items):\n    \n        output_items[0][:] = self.lfm_waveform\n\n \
+      \       return len(output_items[0])\n\n\n"
     affinity: ''
     alias: ''
     amplitude: amplitude
