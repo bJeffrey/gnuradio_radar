@@ -86,6 +86,7 @@ class radar(gr.top_block, Qt.QWidget):
         self.range_to_target = range_to_target = 500
         self.pulse_center_freq_hz = pulse_center_freq_hz = 500.0
         self.num_samples_during_pulse_silence = num_samples_during_pulse_silence = num_samples_per_pulse - num_samples_during_pulse_tx
+        self.num_pulses_per_cpi = num_pulses_per_cpi = 18
         self.bandwidth_khz_upper_limit = bandwidth_khz_upper_limit = 6000.0
         self.bandwidth_khz_lower_limit = bandwidth_khz_lower_limit = 1.0
         self.bandwidth_khz = bandwidth_khz = time_bandwidth_product / tau_sec / 1e3
@@ -112,9 +113,11 @@ class radar(gr.top_block, Qt.QWidget):
         self.qtgui_sink_x_0.enable_rf_freq(False)
 
         self.top_layout.addWidget(self._qtgui_sink_x_0_win)
-        self.epy_block_1 = epy_block_1.blk(prf_khz=prf_khz, pri_sec=pri_sec, duty_cycle=duty_cycle, tau_sec=tau_sec, time_bandwidth_product=time_bandwidth_product, pulse_center_freq_hz=pulse_center_freq_hz, bandwidth_khz_lower_limit=bandwidth_khz_lower_limit, bandwidth_khz_upper_limit=bandwidth_khz_upper_limit, bandwidth_khz=bandwidth_khz, num_samples_per_pulse=num_samples_per_pulse, num_samples_during_pulse_tx=num_samples_during_pulse_tx, num_samples_during_pulse_silence=num_samples_during_pulse_silence, samp_rate=samp_rate, t=np.linspace(0, tau_sec, num=num_samples_during_pulse_tx, endpoint=False), amplitude=amplitude)
+        self.epy_block_1 = epy_block_1.blk(prf_khz=None, pri_sec=None, duty_cycle=None, tau_sec=tau_sec, time_bandwidth_product=None, pulse_center_freq_hz=None, bandwidth_khz_lower_limit=bandwidth_khz_lower_limit, bandwidth_khz_upper_limit=bandwidth_khz_upper_limit, bandwidth_khz=bandwidth_khz, num_samples_per_pulse=num_samples_per_pulse, num_samples_during_pulse_tx=num_samples_during_pulse_tx, num_samples_during_pulse_silence=None, samp_rate=None, t=None, amplitude=amplitude)
+        self.blocks_vector_to_stream_0_0_0 = blocks.vector_to_stream(gr.sizeof_gr_complex*1, num_samples_per_pulse*num_pulses_per_cpi)
         self.blocks_vector_to_stream_0_0 = blocks.vector_to_stream(gr.sizeof_gr_complex*1, num_samples_per_pulse)
         self.blocks_throttle_0 = blocks.throttle(gr.sizeof_gr_complex*num_samples_per_pulse, samp_rate,True)
+        self.blocks_stream_to_vector_0 = blocks.stream_to_vector(gr.sizeof_gr_complex*1, num_samples_per_pulse*num_pulses_per_cpi)
         self.blocks_delay_0 = blocks.delay(gr.sizeof_gr_complex*1, int(range_to_target / (3e8) * samp_rate))
 
 
@@ -122,8 +125,10 @@ class radar(gr.top_block, Qt.QWidget):
         # Connections
         ##################################################
         self.connect((self.blocks_delay_0, 0), (self.qtgui_sink_x_0, 0))
+        self.connect((self.blocks_stream_to_vector_0, 0), (self.blocks_vector_to_stream_0_0_0, 0))
         self.connect((self.blocks_throttle_0, 0), (self.blocks_vector_to_stream_0_0, 0))
-        self.connect((self.blocks_vector_to_stream_0_0, 0), (self.blocks_delay_0, 0))
+        self.connect((self.blocks_vector_to_stream_0_0, 0), (self.blocks_stream_to_vector_0, 0))
+        self.connect((self.blocks_vector_to_stream_0_0_0, 0), (self.blocks_delay_0, 0))
         self.connect((self.epy_block_1, 0), (self.blocks_throttle_0, 0))
 
 
@@ -143,7 +148,6 @@ class radar(gr.top_block, Qt.QWidget):
         self.set_num_samples_per_pulse(int(float(self.samp_rate) / (float(self.prf_khz) * 1e3)))
         self.blocks_delay_0.set_dly(int(self.range_to_target / (3e8) * self.samp_rate))
         self.blocks_throttle_0.set_sample_rate(self.samp_rate)
-        self.epy_block_1.samp_rate = self.samp_rate
 
     def get_prf_khz(self):
         return self.prf_khz
@@ -152,7 +156,6 @@ class radar(gr.top_block, Qt.QWidget):
         self.prf_khz = prf_khz
         self.set_num_samples_per_pulse(int(float(self.samp_rate) / (float(self.prf_khz) * 1e3)))
         self.set_pri_sec(1/(self.prf_khz * 1e3))
-        self.epy_block_1.prf_khz = self.prf_khz
         self.qtgui_sink_x_0.set_frequency_range(self.prf_khz * 1e3, 10e6)
 
     def get_pri_sec(self):
@@ -161,7 +164,6 @@ class radar(gr.top_block, Qt.QWidget):
     def set_pri_sec(self, pri_sec):
         self.pri_sec = pri_sec
         self.set_tau_sec(self.pri_sec * self.duty_cycle)
-        self.epy_block_1.pri_sec = self.pri_sec
 
     def get_num_samples_per_pulse(self):
         return self.num_samples_per_pulse
@@ -179,7 +181,6 @@ class radar(gr.top_block, Qt.QWidget):
         self.duty_cycle = duty_cycle
         self.set_num_samples_during_pulse_tx(int(self.num_samples_per_pulse * self.duty_cycle))
         self.set_tau_sec(self.pri_sec * self.duty_cycle)
-        self.epy_block_1.duty_cycle = self.duty_cycle
 
     def get_time_bandwidth_product(self):
         return self.time_bandwidth_product
@@ -187,7 +188,6 @@ class radar(gr.top_block, Qt.QWidget):
     def set_time_bandwidth_product(self, time_bandwidth_product):
         self.time_bandwidth_product = time_bandwidth_product
         self.set_bandwidth_khz(self.time_bandwidth_product / self.tau_sec / 1e3)
-        self.epy_block_1.time_bandwidth_product = self.time_bandwidth_product
 
     def get_tau_sec(self):
         return self.tau_sec
@@ -195,7 +195,6 @@ class radar(gr.top_block, Qt.QWidget):
     def set_tau_sec(self, tau_sec):
         self.tau_sec = tau_sec
         self.set_bandwidth_khz(self.time_bandwidth_product / self.tau_sec / 1e3)
-        self.epy_block_1.t = np.linspace(0, self.tau_sec, num=self.num_samples_during_pulse_tx, endpoint=False)
         self.epy_block_1.tau_sec = self.tau_sec
 
     def get_num_samples_during_pulse_tx(self):
@@ -205,7 +204,6 @@ class radar(gr.top_block, Qt.QWidget):
         self.num_samples_during_pulse_tx = num_samples_during_pulse_tx
         self.set_num_samples_during_pulse_silence(self.num_samples_per_pulse - self.num_samples_during_pulse_tx)
         self.epy_block_1.num_samples_during_pulse_tx = self.num_samples_during_pulse_tx
-        self.epy_block_1.t = np.linspace(0, self.tau_sec, num=self.num_samples_during_pulse_tx, endpoint=False)
 
     def get_range_to_target(self):
         return self.range_to_target
@@ -219,14 +217,18 @@ class radar(gr.top_block, Qt.QWidget):
 
     def set_pulse_center_freq_hz(self, pulse_center_freq_hz):
         self.pulse_center_freq_hz = pulse_center_freq_hz
-        self.epy_block_1.pulse_center_freq_hz = self.pulse_center_freq_hz
 
     def get_num_samples_during_pulse_silence(self):
         return self.num_samples_during_pulse_silence
 
     def set_num_samples_during_pulse_silence(self, num_samples_during_pulse_silence):
         self.num_samples_during_pulse_silence = num_samples_during_pulse_silence
-        self.epy_block_1.num_samples_during_pulse_silence = self.num_samples_during_pulse_silence
+
+    def get_num_pulses_per_cpi(self):
+        return self.num_pulses_per_cpi
+
+    def set_num_pulses_per_cpi(self, num_pulses_per_cpi):
+        self.num_pulses_per_cpi = num_pulses_per_cpi
 
     def get_bandwidth_khz_upper_limit(self):
         return self.bandwidth_khz_upper_limit

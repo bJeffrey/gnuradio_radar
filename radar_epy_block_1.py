@@ -52,45 +52,33 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
         # a callback is registered (properties work, too).
         
         # (max_unambiguous_range = c / (2 * prf) - at 30 kHz, unambiguous to 5000 m, 3.1 mi)
-        self.prf_khz = prf_khz # pulse repetition frequency
-        self.pri_sec = pri_sec # pulse repetition interval - time per pulse
-        self.duty_cycle = duty_cycle # amount of time spent transmitting within a single pri
-        self.time_bandwidth_product = time_bandwidth_product
-        self.pulse_center_freq_hz=pulse_center_freq_hz #center freq of the linearly-modulated pulse
+        #self.prf_khz = prf_khz # pulse repetition frequency
+        #self.pri_sec = pri_sec # pulse repetition interval - time per pulse
+        #self.duty_cycle = duty_cycle # amount of time spent transmitting within a single pri
+        #self.time_bandwidth_product = time_bandwidth_product # tau_sec * bandwidth_khz * 1e3
+        #self.pulse_center_freq_hz=pulse_center_freq_hz #center freq of the linearly-modulated pulse
 
         self.tau_sec = tau_sec # pulse duration
 
         # calculate bandwidth using TBP and Tau. Check resulting BW to ensure it's reasonable
         self.bandwidth_khz = bandwidth_khz
-        self.samp_rate = samp_rate # rate (Hz) the signal is sampled
+        #self.samp_rate = samp_rate # rate (Hz) the signal is sampled
         self.num_samples_per_pulse = num_samples_per_pulse
 
         self.num_samples_during_pulse_tx = num_samples_during_pulse_tx
-        
-        self.num_samples_during_pulse_silence = num_samples_during_pulse_silence
+
+        #self.num_samples_during_pulse_silence = num_samples_during_pulse_silence
         
         self.amplitude = amplitude
 
         if self.bandwidth_khz > bandwidth_khz_lower_limit or self.bandwidth_khz < bandwidth_khz_upper_limit:
             self.log.error(f"Selected bandwidth: {self.bandwidth_khz} kHz out of range")
-        #else:
-        #    self.log.info(f"pulse bandwidth: {self.bandwidth_khz} kHz")
 
         # create the LFM pulse. Note that this is NOT a mathematical addition of two vectors, but a pythonic contatenation
         self.t = np.linspace(0, tau_sec, num=num_samples_during_pulse_tx, endpoint=False)
 
         self.lfm_waveform = np.zeros(num_samples_per_pulse, dtype=np.complex64)
-        signal = np.complex64(self.amplitude * np.exp(1j * np.pi * self.bandwidth_khz * 1e3 / self.tau_sec * self.t))
-        space_for_signal = self.lfm_waveform[0:self.num_samples_during_pulse_tx]
-        self.log.info(f"signal len: {len(signal)}")
-        self.log.info(f"space_for_signal = {len(space_for_signal)}")
-
-
-        self.lfm_waveform[0:self.num_samples_during_pulse_tx] = signal
-        self.log.info(f"lfm_waveform index 39: {self.lfm_waveform[39]}")
-        self.log.info(f"size of waveform: {len(self.lfm_waveform)}")
-        #self.signal = np.zeros(num_samples_per_pulse, dtype=np.complex64)
-        #self.signal[0:num_samples_during_pulse_tx] = np.complex64(amplitude * np.exp(1j * np.pi * bandwidth_khz * 1e3 / tau_sec * t))
+        self.lfm_waveform[0:self.num_samples_during_pulse_tx] = np.complex64(self.amplitude * np.exp(1j * np.pi * self.bandwidth_khz * 1e3 / self.tau_sec * self.t))
 
     """
     Function:    work
@@ -100,17 +88,8 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
     """
     def work(self, input_items, output_items):
     
-        #self.log.error((f"Type: {output_items[[0][0]]}")
-
         output_items[0][:] = self.lfm_waveform
 
-        #self.log.info(f"output_items[0] length: {len(output_items[0])}")
         return len(output_items[0])
-
-
-
-
-
-
 
 

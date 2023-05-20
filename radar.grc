@@ -81,6 +81,30 @@ blocks:
     coordinate: [352, 76.0]
     rotation: 0
     state: true
+- name: c
+  id: variable
+  parameters:
+    comment: ''
+    value: 3.00e8
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1248, 12.0]
+    rotation: 0
+    state: true
+- name: distance_to_target_as_frac_of_uamb_range
+  id: variable
+  parameters:
+    comment: ''
+    value: '0.5'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1360, 76.0]
+    rotation: 0
+    state: true
 - name: duty_cycle
   id: variable
   parameters:
@@ -108,6 +132,30 @@ blocks:
     coordinate: [960, 668.0]
     rotation: 0
     state: disabled
+- name: max_unambiguous_range_km
+  id: variable
+  parameters:
+    comment: ''
+    value: c * pri_sec / 1.0e3
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1176, 76.0]
+    rotation: 0
+    state: true
+- name: num_pulses_per_cpi
+  id: variable
+  parameters:
+    comment: ''
+    value: '18'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1112, 12.0]
+    rotation: 0
+    state: true
 - name: num_samples_during_pulse_silence
   id: variable
   parameters:
@@ -247,7 +295,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [24, 492.0]
+    coordinate: [0, 644.0]
     rotation: 0
     state: disabled
 - name: blocks_delay_0
@@ -266,9 +314,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [792, 192.0]
+    coordinate: [1168, 440.0]
     rotation: 0
-    state: true
+    state: disabled
 - name: blocks_head_0
   id: blocks_head
   parameters:
@@ -284,9 +332,27 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [768, 396.0]
+    coordinate: [776, 548.0]
     rotation: 0
     state: disabled
+- name: blocks_stream_to_vector_0
+  id: blocks_stream_to_vector
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_items: num_samples_per_pulse*num_pulses_per_cpi
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [744, 152.0]
+    rotation: 0
+    state: true
 - name: blocks_throttle_0
   id: blocks_throttle
   parameters:
@@ -303,7 +369,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [376, 180.0]
+    coordinate: [344, 140.0]
     rotation: 0
     state: true
 - name: blocks_throttle_0_0
@@ -322,7 +388,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [320, 532.0]
+    coordinate: [296, 684.0]
     rotation: 0
     state: disabled
 - name: blocks_vector_source_x_0
@@ -344,7 +410,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [280, 428.0]
+    coordinate: [256, 580.0]
     rotation: 0
     state: disabled
 - name: blocks_vector_to_stream_0
@@ -362,7 +428,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [600, 400.0]
+    coordinate: [608, 552.0]
     rotation: 0
     state: disabled
 - name: blocks_vector_to_stream_0_0
@@ -380,7 +446,25 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [584, 192.0]
+    coordinate: [552, 152.0]
+    rotation: 0
+    state: enabled
+- name: blocks_vector_to_stream_0_0_0
+  id: blocks_vector_to_stream
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_items: num_samples_per_pulse*num_pulses_per_cpi
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1064, 152.0]
     rotation: 0
     state: enabled
 - name: epy_block_0
@@ -415,7 +499,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [504, 532.0]
+    coordinate: [512, 684.0]
     rotation: 0
     state: disabled
 - name: epy_block_1
@@ -450,17 +534,17 @@ blocks:
       \ # initialize logger\n        # if an attribute with the same name as a parameter\
       \ is found,\n        # a callback is registered (properties work, too).\n  \
       \      \n        # (max_unambiguous_range = c / (2 * prf) - at 30 kHz, unambiguous\
-      \ to 5000 m, 3.1 mi)\n        self.prf_khz = prf_khz # pulse repetition frequency\n\
-      \        self.pri_sec = pri_sec # pulse repetition interval - time per pulse\n\
-      \        self.duty_cycle = duty_cycle # amount of time spent transmitting within\
-      \ a single pri\n        self.time_bandwidth_product = time_bandwidth_product\
-      \ # tau_sec * bandwidth_khz * 1e3\n        self.pulse_center_freq_hz=pulse_center_freq_hz\
+      \ to 5000 m, 3.1 mi)\n        #self.prf_khz = prf_khz # pulse repetition frequency\n\
+      \        #self.pri_sec = pri_sec # pulse repetition interval - time per pulse\n\
+      \        #self.duty_cycle = duty_cycle # amount of time spent transmitting within\
+      \ a single pri\n        #self.time_bandwidth_product = time_bandwidth_product\
+      \ # tau_sec * bandwidth_khz * 1e3\n        #self.pulse_center_freq_hz=pulse_center_freq_hz\
       \ #center freq of the linearly-modulated pulse\n\n        self.tau_sec = tau_sec\
       \ # pulse duration\n\n        # calculate bandwidth using TBP and Tau. Check\
       \ resulting BW to ensure it's reasonable\n        self.bandwidth_khz = bandwidth_khz\n\
-      \        self.samp_rate = samp_rate # rate (Hz) the signal is sampled\n    \
-      \    self.num_samples_per_pulse = num_samples_per_pulse\n\n        self.num_samples_during_pulse_tx\
-      \ = num_samples_during_pulse_tx\n\n        self.num_samples_during_pulse_silence\
+      \        #self.samp_rate = samp_rate # rate (Hz) the signal is sampled\n   \
+      \     self.num_samples_per_pulse = num_samples_per_pulse\n\n        self.num_samples_during_pulse_tx\
+      \ = num_samples_during_pulse_tx\n\n        #self.num_samples_during_pulse_silence\
       \ = num_samples_during_pulse_silence\n        \n        self.amplitude = amplitude\n\
       \n        if self.bandwidth_khz > bandwidth_khz_lower_limit or self.bandwidth_khz\
       \ < bandwidth_khz_upper_limit:\n            self.log.error(f\"Selected bandwidth:\
@@ -483,19 +567,19 @@ blocks:
     bandwidth_khz_lower_limit: bandwidth_khz_lower_limit
     bandwidth_khz_upper_limit: bandwidth_khz_upper_limit
     comment: ''
-    duty_cycle: duty_cycle
+    duty_cycle: None
     maxoutbuf: '0'
     minoutbuf: '0'
-    num_samples_during_pulse_silence: num_samples_during_pulse_silence
+    num_samples_during_pulse_silence: None
     num_samples_during_pulse_tx: num_samples_during_pulse_tx
     num_samples_per_pulse: num_samples_per_pulse
-    prf_khz: prf_khz
-    pri_sec: pri_sec
-    pulse_center_freq_hz: pulse_center_freq_hz
-    samp_rate: samp_rate
-    t: np.linspace(0, tau_sec, num=num_samples_during_pulse_tx, endpoint=False)
+    prf_khz: None
+    pri_sec: None
+    pulse_center_freq_hz: None
+    samp_rate: None
+    t: None
     tau_sec: tau_sec
-    time_bandwidth_product: time_bandwidth_product
+    time_bandwidth_product: None
   states:
     _io_cache: ('Linear Frequency Modulation', 'blk', [('prf_khz', '3'), ('pri_sec',
       '0.001'), ('duty_cycle', '0.06'), ('tau_sec', '0.01'), ('time_bandwidth_product',
@@ -505,13 +589,12 @@ blocks:
       '122'), ('samp_rate', '100000.0'), ('t', 'array([0.        , 0.00166667, 0.00333333,
       0.005     , 0.00666667,\n       0.00833333])'), ('amplitude', '1.0')], [], [('0',
       'complex', 1333)], 'Embedded Python Block example - a simple multiply const',
-      ['amplitude', 'bandwidth_khz', 'duty_cycle', 'num_samples_during_pulse_silence',
-      'num_samples_during_pulse_tx', 'num_samples_per_pulse', 'prf_khz', 'pri_sec',
-      'pulse_center_freq_hz', 'samp_rate', 't', 'tau_sec', 'time_bandwidth_product'])
+      ['amplitude', 'bandwidth_khz', 'num_samples_during_pulse_tx', 'num_samples_per_pulse',
+      't', 'tau_sec'])
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [24, 156.0]
+    coordinate: [0, 148.0]
     rotation: 0
     state: enabled
 - name: epy_block_2
@@ -552,9 +635,45 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [600, 484.0]
+    coordinate: [608, 636.0]
     rotation: 0
     state: disabled
+- name: epy_block_3
+  id: epy_block
+  parameters:
+    _source_code: "\"\"\"\nEmbedded Python Blocks:\n\nEach time this file is saved,\
+      \ GRC will instantiate the first class it finds\nto get ports and parameters\
+      \ of your block. The arguments to __init__  will\nbe the parameters. All of\
+      \ them are required to have default values!\n\"\"\"\n\nimport numpy as np\n\
+      from gnuradio import gr\n\n\nclass blk(gr.sync_block):  # other base classes\
+      \ are basic_block, decim_block, interp_block\n    \"\"\"Embedded Python Block\
+      \ example - a simple multiply const\"\"\"\n\n    def __init__(self, \n     \
+      \   distance_to_target_as_frac_of_uamb_range=0.5\n    ):  # only default arguments\
+      \ here\n        \"\"\"arguments to this function show up as parameters in GRC\"\
+      \"\"\n        gr.sync_block.__init__(\n            self,\n            name='Target\
+      \ Injection',   # will show up in GRC\n            in_sig=[(np.complex64,1333*18)],\n\
+      \            out_sig=[(np.complex64,1333*18)]\n        )\n        \n       \
+      \ self.log = gr.logger(self.alias())\n        \n        self.distance_to_target_as_frac_of_uamb_range\
+      \ = distance_to_target_as_frac_of_uamb_range\n\n    def work(self, input_items,\
+      \ output_items):\n        \"\"\"example: multiply with constant\"\"\"\n    \
+      \    self.log.info(f\"length of vector: {len(input_items[0])}\")\n        output_items[0][:]\
+      \ = input_items[0] * 1\n        return len(output_items[0])\n"
+    affinity: ''
+    alias: ''
+    comment: ''
+    distance_to_target_as_frac_of_uamb_range: distance_to_target_as_frac_of_uamb_range
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    _io_cache: ('Target Injection', 'blk', [('distance_to_target_as_frac_of_uamb_range',
+      '0.5')], [('0', 'complex', 23994)], [('0', 'complex', 23994)], 'Embedded Python
+      Block example - a simple multiply const', ['distance_to_target_as_frac_of_uamb_range'])
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [800, 228.0]
+    rotation: 0
+    state: enabled
 - name: import_0
   id: import
   parameters:
@@ -607,7 +726,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [968, 172.0]
+    coordinate: [1272, 140.0]
     rotation: 0
     state: enabled
 - name: qtgui_sink_x_0_0
@@ -636,7 +755,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [752, 500.0]
+    coordinate: [760, 652.0]
     rotation: 0
     state: disabled
 - name: qtgui_sink_x_0_1
@@ -665,22 +784,22 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [936, 364.0]
+    coordinate: [944, 516.0]
     rotation: 0
     state: disabled
 
 connections:
 - [analog_sig_source_x_0, '0', blocks_throttle_0_0, '0']
-- [blocks_delay_0, '0', blocks_vector_to_stream_0, '0']
-- [blocks_delay_0, '0', epy_block_2, '0']
-- [blocks_delay_0, '0', qtgui_sink_x_0, '0']
 - [blocks_head_0, '0', qtgui_sink_x_0_1, '0']
+- [blocks_stream_to_vector_0, '0', epy_block_3, '0']
 - [blocks_throttle_0, '0', blocks_vector_to_stream_0_0, '0']
 - [blocks_throttle_0_0, '0', epy_block_0, '0']
 - [blocks_vector_to_stream_0, '0', blocks_head_0, '0']
-- [blocks_vector_to_stream_0_0, '0', blocks_delay_0, '0']
+- [blocks_vector_to_stream_0_0, '0', blocks_stream_to_vector_0, '0']
+- [blocks_vector_to_stream_0_0_0, '0', qtgui_sink_x_0, '0']
 - [epy_block_0, '0', qtgui_sink_x_0_0, '0']
 - [epy_block_1, '0', blocks_throttle_0, '0']
+- [epy_block_3, '0', blocks_vector_to_stream_0_0_0, '0']
 
 metadata:
   file_format: 1
