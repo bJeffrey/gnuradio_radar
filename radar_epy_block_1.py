@@ -26,11 +26,12 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
         bandwidth_khz_upper_limit=100,
         bandwidth_khz=50,
         num_samples_per_pulse=128,
-        num_samples_during_pulse_tx=6,
+        num_samples_during_pulse_tx=100,
         num_samples_during_pulse_silence=122,
         samp_rate=100e3,
-        t=np.linspace(0, 0.01 , num=6, endpoint=False),
-        amplitude=1.0
+        t=np.linspace(0, 0.01 , num=100, endpoint=False),
+        amplitude=1.0,
+        phase_ramp=1.0
     ):  # only default arguments here
         """arguments to this function show up as parameters in GRC"""
         gr.sync_block.__init__(
@@ -56,7 +57,7 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
         #self.pri_sec = pri_sec # pulse repetition interval - time per pulse
         #self.duty_cycle = duty_cycle # amount of time spent transmitting within a single pri
         #self.time_bandwidth_product = time_bandwidth_product # tau_sec * bandwidth_khz * 1e3
-        #self.pulse_center_freq_hz=pulse_center_freq_hz #center freq of the linearly-modulated pulse
+        self.pulse_center_freq_hz=pulse_center_freq_hz #center freq of the linearly-modulated pulse
 
         self.tau_sec = tau_sec # pulse duration
 
@@ -78,8 +79,19 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
         self.t = np.linspace(0, tau_sec, num=num_samples_during_pulse_tx, endpoint=False)
 
         self.lfm_waveform = np.zeros(num_samples_per_pulse, dtype=np.complex64)
-        self.lfm_waveform[0:self.num_samples_during_pulse_tx] = np.complex64(self.amplitude * np.exp(1j * np.pi * self.bandwidth_khz * 1e3 / self.tau_sec * self.t))
-
+        #self.lfm_waveform[0:self.num_samples_during_pulse_tx] = np.complex64(self.amplitude * np.exp(1j * np.pi * self.bandwidth_khz * 1e3 / self.tau_sec * self.t))
+        
+        self.phase_ramp = np.pi * (bandwidth_khz * 1e3) / self.tau_sec * np.square(self.t)
+        self.lfm_waveform[0:self.num_samples_during_pulse_tx] = self.amplitude * np.cos(2 * np.pi * self.pulse_center_freq_hz * self.t + self.phase_ramp)
+        
+        self.log.error(f"t[10]: {self.t[10]}")
+        self.log.error(f"tau_sec: {self.tau_sec}")
+        self.log.error(f"bandwidth_khz: {self.bandwidth_khz}")
+        self.log.error(f"phase_ramp[10]: {self.phase_ramp[10]}")
+        self.log.error(f"pulse_center_freq_hz: {self.pulse_center_freq_hz}")
+        self.log.error(f"lfm_waveform[10]: {self.lfm_waveform[10]}")
+        
+    
     """
     Function:    work
     Description: Takes inputted in-phase (I) and quadrature (Q) channels 
@@ -88,6 +100,7 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
     """
     def work(self, input_items, output_items):
     
+        #output_items[0][:] = np.linspace(0, num_samples_per_pulse)
         output_items[0][:] = self.lfm_waveform
 
         return len(output_items[0])
