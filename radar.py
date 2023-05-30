@@ -78,7 +78,7 @@ class radar(gr.top_block, Qt.QWidget):
         ##################################################
         self.samp_rate = samp_rate = 4e6
         self.pulse_center_freq_hz = pulse_center_freq_hz = 10.0e3
-        self.prf_khz = prf_khz = 3
+        self.prf_khz = prf_khz = 3.90625
         self.c = c = 299792458
         self.pri_sec = pri_sec = 1/(prf_khz * 1e3)
         self.num_samples_per_pulse = num_samples_per_pulse = int(float(samp_rate) / (float(prf_khz) * 1e3))

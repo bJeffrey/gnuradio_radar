@@ -38,7 +38,7 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
             self,
             name='Linear Frequency Modulation',   # will show up in GRC
             in_sig=[],
-            out_sig=[(np.complex64,1333)]
+            out_sig=[(np.complex64,1024)]
         )
         # log levels: 
         #   trace:      Developing an algorithm and need to log specific values that it calculates

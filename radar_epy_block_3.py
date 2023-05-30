@@ -25,8 +25,8 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
         gr.sync_block.__init__(
             self,
             name='Target Injection',   # will show up in GRC
-            in_sig=[(np.complex64,1333*18)],
-            out_sig=[(np.complex64,1333*18)]
+            in_sig=[(np.complex64,1024*18)],
+            out_sig=[(np.complex64,1024*18)]
         )
         
         self.log = gr.logger(self.alias())

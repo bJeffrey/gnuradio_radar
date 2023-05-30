@@ -220,7 +220,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '3'
+    value: '3.90625'
   states:
     bus_sink: false
     bus_source: false
@@ -558,7 +558,7 @@ blocks:
       \        phase_ramp=1.0\n    ):  # only default arguments here\n        \"\"\
       \"arguments to this function show up as parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n\
       \            self,\n            name='Linear Frequency Modulation',   # will\
-      \ show up in GRC\n            in_sig=[],\n            out_sig=[(np.complex64,1333)]\n\
+      \ show up in GRC\n            in_sig=[],\n            out_sig=[(np.complex64,1024)]\n\
       \        )\n        # log levels: \n        #   trace:      Developing an algorithm\
       \ and need to log specific values that it calculates\n        #   debug:   \
       \   Used for debugging purposes, and should not be visible under usual usage\n\
@@ -644,7 +644,7 @@ blocks:
       0.0077, 0.0078, 0.0079,\n       0.008 , 0.0081, 0.0082, 0.0083, 0.0084, 0.0085,
       0.0086, 0.0087,\n       0.0088, 0.0089, 0.009 , 0.0091, 0.0092, 0.0093, 0.0094,
       0.0095,\n       0.0096, 0.0097, 0.0098, 0.0099])'), ('amplitude', '1.0'), ('phase_ramp',
-      '1.0')], [], [('0', 'complex', 1333)], 'Embedded Python Block example - a simple
+      '1.0')], [], [('0', 'complex', 1024)], 'Embedded Python Block example - a simple
       multiply const', ['amplitude', 'bandwidth_khz', 'num_samples_during_pulse_tx',
       'num_samples_per_pulse', 'phase_ramp', 'pulse_center_freq_hz', 't', 'tau_sec'])
     bus_sink: false
@@ -709,7 +709,7 @@ blocks:
       \    ):  # only default arguments here\n        \"\"\"arguments to this function\
       \ show up as parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n    \
       \        self,\n            name='Target Injection',   # will show up in GRC\n\
-      \            in_sig=[(np.complex64,1333*18)],\n            out_sig=[(np.complex64,1333*18)]\n\
+      \            in_sig=[(np.complex64,1024*18)],\n            out_sig=[(np.complex64,1024*18)]\n\
       \        )\n        \n        self.log = gr.logger(self.alias())\n        \n\
       \        # set class member variables by input arguments\n        self.c = c\n\
       \        self.distance_to_target_m = distance_to_target_m        \n        self.target_vel_mps\
@@ -719,7 +719,7 @@ blocks:
       \ = self.distance_to_target_m * self.samp_rate / self.c\n\n        self.doppler_shift_hz\
       \ = 2 * self.target_vel_mps / self.lambda_m\n        \n        \n        \n\n\
       \    def work(self, input_items, output_items):\n        \"\"\"example: multiply\
-      \ with constant\"\"\"\n        self.log.info(f\"length of vector: {len(input_items[0])}\"\
+      \ with constant\"\"\"\n        #self.log.info(f\"length of vector: {len(input_items[0])}\"\
       )\n        output_items[0][:] = input_items[0] * 1\n        return len(output_items[0])\n"
     affinity: ''
     alias: ''
@@ -735,8 +735,8 @@ blocks:
   states:
     _io_cache: ('Target Injection', 'blk', [('c', '300000000.0'), ('distance_to_target_m',
       '100000.0'), ('target_vel_mps', '100000.0'), ('lambda_m', '2'), ('pri_sec',
-      '0.0003333333333333333'), ('samp_rate', '4000000.0')], [('0', 'complex', 23994)],
-      [('0', 'complex', 23994)], 'Embedded Python Block example - a simple multiply
+      '0.0003333333333333333'), ('samp_rate', '4000000.0')], [('0', 'complex', 18432)],
+      [('0', 'complex', 18432)], 'Embedded Python Block example - a simple multiply
       const', ['c', 'distance_to_target_m', 'lambda_m', 'pri_sec', 'samp_rate', 'target_vel_mps'])
     bus_sink: false
     bus_source: false
