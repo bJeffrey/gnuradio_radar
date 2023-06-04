@@ -120,20 +120,16 @@ class radar(gr.top_block, Qt.QWidget):
         self.qtgui_sink_x_0.enable_rf_freq(False)
 
         self.top_layout.addWidget(self._qtgui_sink_x_0_win)
-        self.epy_block_3 = epy_block_3.blk(c=c, distance_to_target_m=distance_to_target_m, target_vel_mps=target_vel_mps, lambda_m=lambda_m, pri_sec=pri_sec, samp_rate=samp_rate)
-        self.epy_block_1 = epy_block_1.blk(prf_khz=None, pri_sec=None, duty_cycle=None, tau_sec=tau_sec, time_bandwidth_product=None, pulse_center_freq_hz=pulse_center_freq_hz, bandwidth_khz_lower_limit=bandwidth_khz_lower_limit, bandwidth_khz_upper_limit=bandwidth_khz_upper_limit, bandwidth_khz=bandwidth_khz, num_samples_per_pulse=num_samples_per_pulse, num_samples_during_pulse_tx=num_samples_during_pulse_tx, num_samples_during_pulse_silence=None, samp_rate=None, t=None, amplitude=amplitude, phase_ramp=None)
+        self.epy_block_3 = epy_block_3.blk(num_samples_per_pulse=num_samples_per_pulse, num_pulses_per_cpi=num_pulses_per_cpi, c=c, distance_to_target_m=distance_to_target_m, target_vel_mps=target_vel_mps, lambda_m=lambda_m, pri_sec=pri_sec, samp_rate=samp_rate)
+        self.epy_block_1 = epy_block_1.blk(prf_khz=None, pri_sec=None, duty_cycle=None, tau_sec=tau_sec, time_bandwidth_product=None, pulse_center_freq_hz=pulse_center_freq_hz, bandwidth_khz_lower_limit=bandwidth_khz_lower_limit, bandwidth_khz_upper_limit=bandwidth_khz_upper_limit, bandwidth_khz=bandwidth_khz, num_samples_per_pulse=num_samples_per_pulse, num_pulses_per_cpi=num_pulses_per_cpi, num_samples_during_pulse_tx=num_samples_during_pulse_tx, num_samples_during_pulse_silence=None, samp_rate=None, t=None, amplitude=amplitude, phase_ramp=None)
         self.blocks_vector_to_stream_0_0_0 = blocks.vector_to_stream(gr.sizeof_gr_complex*1, num_samples_per_pulse*num_pulses_per_cpi)
-        self.blocks_vector_to_stream_0_0 = blocks.vector_to_stream(gr.sizeof_gr_complex*1, num_samples_per_pulse)
         self.blocks_throttle_0 = blocks.throttle(gr.sizeof_gr_complex*num_samples_per_pulse, samp_rate,True)
-        self.blocks_stream_to_vector_0 = blocks.stream_to_vector(gr.sizeof_gr_complex*1, num_samples_per_pulse*num_pulses_per_cpi)
 
 
         ##################################################
         # Connections
         ##################################################
-        self.connect((self.blocks_stream_to_vector_0, 0), (self.epy_block_3, 0))
-        self.connect((self.blocks_throttle_0, 0), (self.blocks_vector_to_stream_0_0, 0))
-        self.connect((self.blocks_vector_to_stream_0_0, 0), (self.blocks_stream_to_vector_0, 0))
+        self.connect((self.blocks_throttle_0, 0), (self.epy_block_3, 0))
         self.connect((self.blocks_vector_to_stream_0_0_0, 0), (self.qtgui_sink_x_0, 0))
         self.connect((self.epy_block_1, 0), (self.blocks_throttle_0, 0))
         self.connect((self.epy_block_3, 0), (self.blocks_vector_to_stream_0_0_0, 0))
@@ -200,6 +196,7 @@ class radar(gr.top_block, Qt.QWidget):
         self.set_num_samples_during_pulse_silence(self.num_samples_per_pulse - self.num_samples_during_pulse_tx)
         self.set_num_samples_during_pulse_tx(int(self.num_samples_per_pulse * self.duty_cycle))
         self.epy_block_1.num_samples_per_pulse = self.num_samples_per_pulse
+        self.epy_block_3.num_samples_per_pulse = self.num_samples_per_pulse
 
     def get_lambda_m(self):
         return self.lambda_m
@@ -278,6 +275,8 @@ class radar(gr.top_block, Qt.QWidget):
 
     def set_num_pulses_per_cpi(self, num_pulses_per_cpi):
         self.num_pulses_per_cpi = num_pulses_per_cpi
+        self.epy_block_1.num_pulses_per_cpi = self.num_pulses_per_cpi
+        self.epy_block_3.num_pulses_per_cpi = self.num_pulses_per_cpi
 
     def get_distance_to_target_m(self):
         return self.distance_to_target_m

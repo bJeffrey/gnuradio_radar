@@ -54,7 +54,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1096, 12.0]
+    coordinate: [1136, 12.0]
     rotation: 0
     state: true
 - name: bandwidth_khz_lower_limit
@@ -90,7 +90,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1208, 12.0]
+    coordinate: [1264, 12.0]
     rotation: 0
     state: true
 - name: distance_to_target_m
@@ -141,7 +141,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [840, 12.0]
+    coordinate: [1552, 12.0]
     rotation: 0
     state: true
 - name: max_unambiguous_range_m
@@ -165,7 +165,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1296, 12.0]
+    coordinate: [1368, 12.0]
     rotation: 0
     state: true
 - name: num_pulses_per_cpi
@@ -177,7 +177,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1456, 12.0]
+    coordinate: [696, 12.0]
     rotation: 0
     state: true
 - name: num_samples_during_pulse_silence
@@ -249,7 +249,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [696, 12.0]
+    coordinate: [832, 12.0]
     rotation: 0
     state: true
 - name: range_to_target
@@ -309,7 +309,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [936, 12.0]
+    coordinate: [976, 12.0]
     rotation: 0
     state: true
 - name: analog_sig_source_x_0
@@ -386,9 +386,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [744, 152.0]
+    coordinate: [480, 152.0]
     rotation: 0
-    state: true
+    state: disabled
 - name: blocks_throttle_0
   id: blocks_throttle
   parameters:
@@ -405,9 +405,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [344, 140.0]
+    coordinate: [360, 332.0]
     rotation: 0
-    state: true
+    state: enabled
 - name: blocks_throttle_0_0
   id: blocks_throttle
   parameters:
@@ -482,9 +482,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [552, 152.0]
+    coordinate: [312, 152.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: blocks_vector_to_stream_0_0_0
   id: blocks_vector_to_stream
   parameters:
@@ -552,25 +552,27 @@ blocks:
       \ prf_khz=3,\n        pri_sec=0.001,\n        duty_cycle=0.06,\n        tau_sec=0.01,\n\
       \        time_bandwidth_product=100,\n        pulse_center_freq_hz=500,\n  \
       \      bandwidth_khz_lower_limit=1,\n        bandwidth_khz_upper_limit=100,\n\
-      \        bandwidth_khz=50,\n        num_samples_per_pulse=128,\n        num_samples_during_pulse_tx=100,\n\
-      \        num_samples_during_pulse_silence=122,\n        samp_rate=100e3,\n \
-      \       t=np.linspace(0, 0.01 , num=100, endpoint=False),\n        amplitude=1.0,\n\
-      \        phase_ramp=1.0\n    ):  # only default arguments here\n        \"\"\
-      \"arguments to this function show up as parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n\
-      \            self,\n            name='Linear Frequency Modulation',   # will\
-      \ show up in GRC\n            in_sig=[],\n            out_sig=[(np.complex64,1024)]\n\
-      \        )\n        # log levels: \n        #   trace:      Developing an algorithm\
-      \ and need to log specific values that it calculates\n        #   debug:   \
-      \   Used for debugging purposes, and should not be visible under usual usage\n\
-      \        #   info:       Information that does not require immediate attention,\
-      \ but might be of interest\n        #   warn:       Something might be wrong\
-      \ and it's probably worth looking into it\n        #   error:      An error\
-      \ has occurred. Meaning something definitely is wrong\n        #   critical:\
-      \   An error that cannot be recovered from\n        \n        self.log = gr.logger(self.alias())\
-      \ # initialize logger\n        # if an attribute with the same name as a parameter\
-      \ is found,\n        # a callback is registered (properties work, too).\n  \
-      \      \n        # (max_unambiguous_range = c / (2 * prf) - at 30 kHz, unambiguous\
-      \ to 5000 m, 3.1 mi)\n        #self.prf_khz = prf_khz # pulse repetition frequency\n\
+      \        bandwidth_khz=50,\n        num_samples_per_pulse=128,\n        num_pulses_per_cpi=18,\n\
+      \        num_samples_during_pulse_tx=100,\n        num_samples_during_pulse_silence=122,\n\
+      \        samp_rate=100e3,\n        t=np.linspace(0, 0.01 , num=100, endpoint=False),\n\
+      \        amplitude=1.0,\n        phase_ramp=1.0\n    ):  # only default arguments\
+      \ here\n        \"\"\"arguments to this function show up as parameters in GRC\"\
+      \"\"\n        \"\"\"out_sig=[(np.complex64,1024), (np.uint16, 1)]\"\"\"\n  \
+      \      gr.sync_block.__init__(\n            self,\n            name='Linear\
+      \ Frequency Modulation',   # will show up in GRC\n            in_sig=[],\n \
+      \           out_sig=[(np.complex64,1024)]\n        )\n        # log levels:\
+      \ \n        #   trace:      Developing an algorithm and need to log specific\
+      \ values that it calculates\n        #   debug:      Used for debugging purposes,\
+      \ and should not be visible under usual usage\n        #   info:       Information\
+      \ that does not require immediate attention, but might be of interest\n    \
+      \    #   warn:       Something might be wrong and it's probably worth looking\
+      \ into it\n        #   error:      An error has occurred. Meaning something\
+      \ definitely is wrong\n        #   critical:   An error that cannot be recovered\
+      \ from\n        \n        self.log = gr.logger(self.alias()) # initialize logger\n\
+      \        # if an attribute with the same name as a parameter is found,\n   \
+      \     # a callback is registered (properties work, too).\n        \n       \
+      \ # (max_unambiguous_range = c / (2 * prf) - at 30 kHz, unambiguous to 5000\
+      \ m, 3.1 mi)\n        #self.prf_khz = prf_khz # pulse repetition frequency\n\
       \        #self.pri_sec = pri_sec # pulse repetition interval - time per pulse\n\
       \        #self.duty_cycle = duty_cycle # amount of time spent transmitting within\
       \ a single pri\n        #self.time_bandwidth_product = time_bandwidth_product\
@@ -579,32 +581,41 @@ blocks:
       \ # pulse duration\n\n        # calculate bandwidth using TBP and Tau. Check\
       \ resulting BW to ensure it's reasonable\n        self.bandwidth_khz = bandwidth_khz\n\
       \        #self.samp_rate = samp_rate # rate (Hz) the signal is sampled\n   \
-      \     self.num_samples_per_pulse = num_samples_per_pulse\n\n        self.num_samples_during_pulse_tx\
-      \ = num_samples_during_pulse_tx\n\n        #self.num_samples_during_pulse_silence\
-      \ = num_samples_during_pulse_silence\n        \n        self.amplitude = amplitude\n\
-      \n        if self.bandwidth_khz > bandwidth_khz_lower_limit or self.bandwidth_khz\
-      \ < bandwidth_khz_upper_limit:\n            self.log.error(f\"Selected bandwidth:\
-      \ {self.bandwidth_khz} kHz out of range\")\n\n        # create the LFM pulse.\
-      \ Note that this is NOT a mathematical addition of two vectors, but a pythonic\
-      \ contatenation\n        self.t = np.linspace(0, tau_sec, num=num_samples_during_pulse_tx,\
-      \ endpoint=False)\n\n        self.lfm_waveform = np.zeros(num_samples_per_pulse,\
-      \ dtype=np.complex64)\n        #self.lfm_waveform[0:self.num_samples_during_pulse_tx]\
-      \ = np.complex64(self.amplitude * np.exp(1j * np.pi * self.bandwidth_khz * 1e3\
-      \ / self.tau_sec * self.t))\n        \n        self.phase_ramp = np.pi * (bandwidth_khz\
-      \ * 1e3) / self.tau_sec * np.square(self.t)\n        self.lfm_waveform[0:self.num_samples_during_pulse_tx]\
+      \     self.num_samples_per_pulse = num_samples_per_pulse\n\n        self.num_pulses_per_cpi\
+      \ = num_pulses_per_cpi\n\n        self.num_samples_during_pulse_tx = num_samples_during_pulse_tx\n\
+      \n        #self.num_samples_during_pulse_silence = num_samples_during_pulse_silence\n\
+      \        \n        self.amplitude = amplitude\n\n        if self.bandwidth_khz\
+      \ > bandwidth_khz_lower_limit or self.bandwidth_khz < bandwidth_khz_upper_limit:\n\
+      \            self.log.error(f\"Selected bandwidth: {self.bandwidth_khz} kHz\
+      \ out of range\")\n\n        # create the LFM pulse. Note that this is NOT a\
+      \ mathematical addition of two vectors, but a pythonic contatenation\n     \
+      \   self.t = np.linspace(0, tau_sec, num=num_samples_during_pulse_tx, endpoint=False)\n\
+      \n        self.lfm_waveform = np.zeros(num_samples_per_pulse, dtype=np.complex64)\n\
+      \        #self.lfm_waveform[0:self.num_samples_during_pulse_tx] = np.complex64(self.amplitude\
+      \ * np.exp(1j * np.pi * self.bandwidth_khz * 1e3 / self.tau_sec * self.t))\n\
+      \        \n        self.phase_ramp = np.pi * (bandwidth_khz * 1e3) / self.tau_sec\
+      \ * np.square(self.t)\n        self.lfm_waveform[0:self.num_samples_during_pulse_tx]\
       \ = self.amplitude * np.cos(2 * np.pi * self.pulse_center_freq_hz * self.t +\
-      \ self.phase_ramp)\n        \n        self.log.error(f\"t[10]: {self.t[10]}\"\
-      )\n        self.log.error(f\"tau_sec: {self.tau_sec}\")\n        self.log.error(f\"\
-      bandwidth_khz: {self.bandwidth_khz}\")\n        self.log.error(f\"phase_ramp[10]:\
-      \ {self.phase_ramp[10]}\")\n        self.log.error(f\"pulse_center_freq_hz:\
+      \ self.phase_ramp)\n        \n        self.work_counter = 1 # keep track of\
+      \ number of times work is called\n        '''\n        self.log.error(f\"t[10]:\
+      \ {self.t[10]}\")\n        self.log.error(f\"tau_sec: {self.tau_sec}\")\n  \
+      \      self.log.error(f\"bandwidth_khz: {self.bandwidth_khz}\")\n        self.log.error(f\"\
+      phase_ramp[10]: {self.phase_ramp[10]}\")\n        self.log.error(f\"pulse_center_freq_hz:\
       \ {self.pulse_center_freq_hz}\")\n        self.log.error(f\"lfm_waveform[10]:\
-      \ {self.lfm_waveform[10]}\")\n        \n    \n    \"\"\"\n    Function:    work\n\
+      \ {self.lfm_waveform[10]}\")\n        '''\n    \n    '''\n    Function:    work\n\
       \    Description: Takes inputted in-phase (I) and quadrature (Q) channels \n\
       \                 and performs linear frequency modulation (i.e., the first\
-      \ step in pulse compression).\n                 Refer to p. 790\n    \"\"\"\n\
-      \    def work(self, input_items, output_items):\n    \n        #output_items[0][:]\
-      \ = np.linspace(0, num_samples_per_pulse)\n        output_items[0][:] = self.lfm_waveform\n\
-      \n        return len(output_items[0])\n\n\n"
+      \ step in pulse compression).\n                 Refer to p. 790 (baseband compression\
+      \ only, no regard to starting frequency)\n    '''\n    def work(self, input_items,\
+      \ output_items):\n    \n        #self.log.error(f\"before assignment, output_items[0]\
+      \ length: {len(output_items[0])}\") \n        output_items[0] = np.ones(self.num_samples_per_pulse,\
+      \ dtype=np.complex64) + 5j\n        #output_items[0] = self.lfm_waveform\n \
+      \       #self.log.error(f\"lfm_waveform length: {len(self.lfm_waveform)}\")\n\
+      \        #self.log.error(f\"output_items[0] length: {len(output_items[0])}\"\
+      )\n        self.log.error(f\"output_items shape: {np.shape(output_items)}\"\
+      )\n        self.log.error(f\"fifth element: {output_items[0][5]}\")\n      \
+      \  #self.log.info(f\"work_counter: {self.work_counter}\")\n        \n      \
+      \  self.work_counter += 1\n        return len(output_items[0])\n\n\n"
     affinity: ''
     alias: ''
     amplitude: amplitude
@@ -615,6 +626,7 @@ blocks:
     duty_cycle: None
     maxoutbuf: '0'
     minoutbuf: '0'
+    num_pulses_per_cpi: num_pulses_per_cpi
     num_samples_during_pulse_silence: None
     num_samples_during_pulse_tx: num_samples_during_pulse_tx
     num_samples_per_pulse: num_samples_per_pulse
@@ -631,22 +643,23 @@ blocks:
       '0.001'), ('duty_cycle', '0.06'), ('tau_sec', '0.01'), ('time_bandwidth_product',
       '100'), ('pulse_center_freq_hz', '500'), ('bandwidth_khz_lower_limit', '1'),
       ('bandwidth_khz_upper_limit', '100'), ('bandwidth_khz', '50'), ('num_samples_per_pulse',
-      '128'), ('num_samples_during_pulse_tx', '100'), ('num_samples_during_pulse_silence',
-      '122'), ('samp_rate', '100000.0'), ('t', 'array([0.    , 0.0001, 0.0002, 0.0003,
-      0.0004, 0.0005, 0.0006, 0.0007,\n       0.0008, 0.0009, 0.001 , 0.0011, 0.0012,
-      0.0013, 0.0014, 0.0015,\n       0.0016, 0.0017, 0.0018, 0.0019, 0.002 , 0.0021,
-      0.0022, 0.0023,\n       0.0024, 0.0025, 0.0026, 0.0027, 0.0028, 0.0029, 0.003
-      , 0.0031,\n       0.0032, 0.0033, 0.0034, 0.0035, 0.0036, 0.0037, 0.0038, 0.0039,\n       0.004
-      , 0.0041, 0.0042, 0.0043, 0.0044, 0.0045, 0.0046, 0.0047,\n       0.0048, 0.0049,
-      0.005 , 0.0051, 0.0052, 0.0053, 0.0054, 0.0055,\n       0.0056, 0.0057, 0.0058,
-      0.0059, 0.006 , 0.0061, 0.0062, 0.0063,\n       0.0064, 0.0065, 0.0066, 0.0067,
-      0.0068, 0.0069, 0.007 , 0.0071,\n       0.0072, 0.0073, 0.0074, 0.0075, 0.0076,
-      0.0077, 0.0078, 0.0079,\n       0.008 , 0.0081, 0.0082, 0.0083, 0.0084, 0.0085,
-      0.0086, 0.0087,\n       0.0088, 0.0089, 0.009 , 0.0091, 0.0092, 0.0093, 0.0094,
-      0.0095,\n       0.0096, 0.0097, 0.0098, 0.0099])'), ('amplitude', '1.0'), ('phase_ramp',
-      '1.0')], [], [('0', 'complex', 1024)], 'Embedded Python Block example - a simple
-      multiply const', ['amplitude', 'bandwidth_khz', 'num_samples_during_pulse_tx',
-      'num_samples_per_pulse', 'phase_ramp', 'pulse_center_freq_hz', 't', 'tau_sec'])
+      '128'), ('num_pulses_per_cpi', '18'), ('num_samples_during_pulse_tx', '100'),
+      ('num_samples_during_pulse_silence', '122'), ('samp_rate', '100000.0'), ('t',
+      'array([0.    , 0.0001, 0.0002, 0.0003, 0.0004, 0.0005, 0.0006, 0.0007,\n       0.0008,
+      0.0009, 0.001 , 0.0011, 0.0012, 0.0013, 0.0014, 0.0015,\n       0.0016, 0.0017,
+      0.0018, 0.0019, 0.002 , 0.0021, 0.0022, 0.0023,\n       0.0024, 0.0025, 0.0026,
+      0.0027, 0.0028, 0.0029, 0.003 , 0.0031,\n       0.0032, 0.0033, 0.0034, 0.0035,
+      0.0036, 0.0037, 0.0038, 0.0039,\n       0.004 , 0.0041, 0.0042, 0.0043, 0.0044,
+      0.0045, 0.0046, 0.0047,\n       0.0048, 0.0049, 0.005 , 0.0051, 0.0052, 0.0053,
+      0.0054, 0.0055,\n       0.0056, 0.0057, 0.0058, 0.0059, 0.006 , 0.0061, 0.0062,
+      0.0063,\n       0.0064, 0.0065, 0.0066, 0.0067, 0.0068, 0.0069, 0.007 , 0.0071,\n       0.0072,
+      0.0073, 0.0074, 0.0075, 0.0076, 0.0077, 0.0078, 0.0079,\n       0.008 , 0.0081,
+      0.0082, 0.0083, 0.0084, 0.0085, 0.0086, 0.0087,\n       0.0088, 0.0089, 0.009
+      , 0.0091, 0.0092, 0.0093, 0.0094, 0.0095,\n       0.0096, 0.0097, 0.0098, 0.0099])'),
+      ('amplitude', '1.0'), ('phase_ramp', '1.0')], [], [('0', 'complex', 1024)],
+      'Embedded Python Block example - a simple multiply const', ['amplitude', 'bandwidth_khz',
+      'num_pulses_per_cpi', 'num_samples_during_pulse_tx', 'num_samples_per_pulse',
+      'phase_ramp', 'pulse_center_freq_hz', 't', 'tau_sec'])
     bus_sink: false
     bus_source: false
     bus_structure: null
@@ -703,24 +716,52 @@ blocks:
       \ them are required to have default values!\n\"\"\"\n\nimport numpy as np\n\
       from gnuradio import gr\n\n\nclass blk(gr.sync_block):  # other base classes\
       \ are basic_block, decim_block, interp_block\n    \"\"\"Embedded Python Block\
-      \ example - a simple multiply const\"\"\"\n\n    def __init__(self, \n     \
-      \   c=3.00e8,\n        distance_to_target_m=100.0 * 1.0e3,\n        target_vel_mps=100.0\
-      \ * 1.0e3,\n        lambda_m=2,\n        pri_sec=1.0/3.0e3,\n        samp_rate=4e6\n\
+      \ example - a simple multiply const\"\"\"\n\n    def __init__(self,\n      \
+      \  num_samples_per_pulse=1024,\n        num_pulses_per_cpi=18,\n        c=3.00e8,\n\
+      \        distance_to_target_m=100.0 * 1.0e3,\n        target_vel_mps=100.0 *\
+      \ 1.0e3,\n        lambda_m=2,\n        pri_sec=1.0/3.0e3,\n        samp_rate=4e6\n\
       \    ):  # only default arguments here\n        \"\"\"arguments to this function\
       \ show up as parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n    \
-      \        self,\n            name='Target Injection',   # will show up in GRC\n\
-      \            in_sig=[(np.complex64,1024*18)],\n            out_sig=[(np.complex64,1024*18)]\n\
-      \        )\n        \n        self.log = gr.logger(self.alias())\n        \n\
-      \        # set class member variables by input arguments\n        self.c = c\n\
-      \        self.distance_to_target_m = distance_to_target_m        \n        self.target_vel_mps\
-      \ = target_vel_mps\n        self.lambda_m = lambda_m\n        self.pri_sec =\
-      \ pri_sec\n        self.samp_rate = samp_rate\n        \n        # calculate\
-      \ range bin and doppler shift of target\n        self.num_samples_to_target\
+      \        self,\n            name='Target Injection',\n            in_sig=[(np.complex64,1024)],\
+      \ # single pulse\n            out_sig=[(np.complex64,1024*18)] # 1 CPI worth\
+      \ of data\n        )\n        \n        self.log = gr.logger(self.alias())\n\
+      \        \n        # set CPI parameters\n        self.num_samples_per_pulse\
+      \ = num_samples_per_pulse\n        self.num_pulses_per_cpi = num_pulses_per_cpi\n\
+      \        self.pulses = np.zeros((self.num_samples_per_pulse, self.num_pulses_per_cpi),\
+      \ dtype=np.complex64)\n        self.pulse_idx = -1 #initialize to -1, increment\
+      \ at every call to work() at beginning of work()\n        \n        # set target\
+      \ parameters\n        self.c = c\n        self.distance_to_target_m = distance_to_target_m\
+      \        \n        self.target_vel_mps = target_vel_mps\n        self.lambda_m\
+      \ = lambda_m\n        self.pri_sec = pri_sec\n        self.samp_rate = samp_rate\n\
+      \        # calculate range bin and doppler shift of target\n        self.num_samples_to_target\
       \ = self.distance_to_target_m * self.samp_rate / self.c\n\n        self.doppler_shift_hz\
-      \ = 2 * self.target_vel_mps / self.lambda_m\n        \n        \n        \n\n\
-      \    def work(self, input_items, output_items):\n        \"\"\"example: multiply\
-      \ with constant\"\"\"\n        #self.log.info(f\"length of vector: {len(input_items[0])}\"\
-      )\n        output_items[0][:] = input_items[0] * 1\n        return len(output_items[0])\n"
+      \ = 2 * self.target_vel_mps / self.lambda_m\n\n        self.log.info(f\"pulses\
+      \ shape: {self.pulses.shape}\")\n\n    def work(self, input_items, output_items):\n\
+      \        self.pulse_idx += 1 # first thing that should happen is this value\
+      \ incrementing\n        #self.log.info(f\"length of vector: {len(input_items[0][:])}\"\
+      )\n        #self.log.info(f\"last: {input_items[0][1024*18]}\")\n        my_temp_1\
+      \ = self.pulses[:,self.pulse_idx]\n        self.log.info(f\"my_temp_1.shape:\
+      \ {my_temp_1.shape})\") # ((1024,))\n        my_temp_2 = self.pulses[self.pulse_idx,:]\n\
+      \        self.log.info(f\"my_temp_2.shape: {my_temp_2.shape}\") # (18,)\n  \
+      \      my_temp_3 = self.pulses\n        self.log.info(f\"my_temp_3.shape: {my_temp_3.shape}\"\
+      ) # (1024,18)\n        \n        \n        self.log.error(f\"input_items shape:\
+      \ {np.shape(input_items)}\") #(1, 2, 1024)\n        self.log.info(f\"array_equal:\
+      \ {np.array_equal(input_items[0][0], input_items[0][1])}\")\n        self.log.info(f\"\
+      fifth element 0: {input_items[0][0][5]}\")\n        self.log.info(f\"fifth element\
+      \ 1: {input_items[0][1][5]}\")\n        self.pulses[:,self.pulse_idx] = input_items[0][0][:]\
+      \ # need to loop through this, because I'm getting an input_item that is too\
+      \ large\n        \n        if self.pulse_idx < self.num_pulses_per_cpi:\n  \
+      \          self.log.info(f\"output_items[0]: {len(output_items[0])}\")\n   \
+      \         output_items[0] = np.zeros(self.num_samples_per_pulse * self.num_pulses_per_cpi,\
+      \ dtype=np.complex64)\n            self.log.error(f\"output_items[0] length:\
+      \ {len(output_items[0][:])}\")\n            return len(output_items[0])\n\n\
+      \        self.log.info(f\"I made it! I have {self.pulse_idx} pulses!\")    \
+      \        \n        # if we made it to this line, it is assumed that we have\
+      \ a full CPI of data.\n\n        all_pulses = self.pulses.flatten()\n      \
+      \  self.log.info(f\"all_pulses length: {len(all_pulses)}\")\n        output_items[0]\
+      \ = self.pulses.flatten()\n        \n        self.pulse_idx = -1 # reset the\
+      \ pulse_idx - remember that this is incremented at the top of work before it\
+      \ is used\n        return len(output_items[0])\n\n\n\n\n\n\n\n\n"
     affinity: ''
     alias: ''
     c: c
@@ -729,19 +770,23 @@ blocks:
     lambda_m: lambda_m
     maxoutbuf: '0'
     minoutbuf: '0'
+    num_pulses_per_cpi: num_pulses_per_cpi
+    num_samples_per_pulse: num_samples_per_pulse
     pri_sec: pri_sec
     samp_rate: samp_rate
     target_vel_mps: target_vel_mps
   states:
-    _io_cache: ('Target Injection', 'blk', [('c', '300000000.0'), ('distance_to_target_m',
-      '100000.0'), ('target_vel_mps', '100000.0'), ('lambda_m', '2'), ('pri_sec',
-      '0.0003333333333333333'), ('samp_rate', '4000000.0')], [('0', 'complex', 18432)],
-      [('0', 'complex', 18432)], 'Embedded Python Block example - a simple multiply
-      const', ['c', 'distance_to_target_m', 'lambda_m', 'pri_sec', 'samp_rate', 'target_vel_mps'])
+    _io_cache: ('Target Injection', 'blk', [('num_samples_per_pulse', '1024'), ('num_pulses_per_cpi',
+      '18'), ('c', '300000000.0'), ('distance_to_target_m', '100000.0'), ('target_vel_mps',
+      '100000.0'), ('lambda_m', '2'), ('pri_sec', '0.0003333333333333333'), ('samp_rate',
+      '4000000.0')], [('0', 'complex', 1024)], [('0', 'complex', 18432)], 'Embedded
+      Python Block example - a simple multiply const', ['c', 'distance_to_target_m',
+      'lambda_m', 'num_pulses_per_cpi', 'num_samples_per_pulse', 'pri_sec', 'samp_rate',
+      'target_vel_mps'])
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [896, 196.0]
+    coordinate: [600, 220.0]
     rotation: 0
     state: enabled
 - name: import_0
@@ -862,13 +907,14 @@ connections:
 - [analog_sig_source_x_0, '0', blocks_throttle_0_0, '0']
 - [blocks_head_0, '0', qtgui_sink_x_0_1, '0']
 - [blocks_stream_to_vector_0, '0', epy_block_3, '0']
-- [blocks_throttle_0, '0', blocks_vector_to_stream_0_0, '0']
+- [blocks_throttle_0, '0', epy_block_3, '0']
 - [blocks_throttle_0_0, '0', epy_block_0, '0']
 - [blocks_vector_to_stream_0, '0', blocks_head_0, '0']
 - [blocks_vector_to_stream_0_0, '0', blocks_stream_to_vector_0, '0']
 - [blocks_vector_to_stream_0_0_0, '0', qtgui_sink_x_0, '0']
 - [epy_block_0, '0', qtgui_sink_x_0_0, '0']
 - [epy_block_1, '0', blocks_throttle_0, '0']
+- [epy_block_1, '0', blocks_vector_to_stream_0_0, '0']
 - [epy_block_3, '0', blocks_vector_to_stream_0_0_0, '0']
 
 metadata:

@@ -26,6 +26,7 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
         bandwidth_khz_upper_limit=100,
         bandwidth_khz=50,
         num_samples_per_pulse=128,
+        num_pulses_per_cpi=18,
         num_samples_during_pulse_tx=100,
         num_samples_during_pulse_silence=122,
         samp_rate=100e3,
@@ -34,6 +35,7 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
         phase_ramp=1.0
     ):  # only default arguments here
         """arguments to this function show up as parameters in GRC"""
+        """out_sig=[(np.complex64,1024), (np.uint16, 1)]"""
         gr.sync_block.__init__(
             self,
             name='Linear Frequency Modulation',   # will show up in GRC
@@ -66,6 +68,8 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
         #self.samp_rate = samp_rate # rate (Hz) the signal is sampled
         self.num_samples_per_pulse = num_samples_per_pulse
 
+        self.num_pulses_per_cpi = num_pulses_per_cpi
+
         self.num_samples_during_pulse_tx = num_samples_during_pulse_tx
 
         #self.num_samples_during_pulse_silence = num_samples_during_pulse_silence
@@ -84,25 +88,34 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
         self.phase_ramp = np.pi * (bandwidth_khz * 1e3) / self.tau_sec * np.square(self.t)
         self.lfm_waveform[0:self.num_samples_during_pulse_tx] = self.amplitude * np.cos(2 * np.pi * self.pulse_center_freq_hz * self.t + self.phase_ramp)
         
+        self.work_counter = 1 # keep track of number of times work is called
+        '''
         self.log.error(f"t[10]: {self.t[10]}")
         self.log.error(f"tau_sec: {self.tau_sec}")
         self.log.error(f"bandwidth_khz: {self.bandwidth_khz}")
         self.log.error(f"phase_ramp[10]: {self.phase_ramp[10]}")
         self.log.error(f"pulse_center_freq_hz: {self.pulse_center_freq_hz}")
         self.log.error(f"lfm_waveform[10]: {self.lfm_waveform[10]}")
-        
+        '''
     
-    """
+    '''
     Function:    work
     Description: Takes inputted in-phase (I) and quadrature (Q) channels 
                  and performs linear frequency modulation (i.e., the first step in pulse compression).
-                 Refer to p. 790
-    """
+                 Refer to p. 790 (baseband compression only, no regard to starting frequency)
+    '''
     def work(self, input_items, output_items):
     
-        #output_items[0][:] = np.linspace(0, num_samples_per_pulse)
-        output_items[0][:] = self.lfm_waveform
-
+        #self.log.error(f"before assignment, output_items[0] length: {len(output_items[0])}") 
+        output_items[0] = np.ones(self.num_samples_per_pulse, dtype=np.complex64) + 5j
+        #output_items[0] = self.lfm_waveform
+        #self.log.error(f"lfm_waveform length: {len(self.lfm_waveform)}")
+        #self.log.error(f"output_items[0] length: {len(output_items[0])}")
+        self.log.error(f"output_items shape: {np.shape(output_items)}")
+        self.log.error(f"fifth element: {output_items[0][5]}")
+        #self.log.info(f"work_counter: {self.work_counter}")
+        
+        self.work_counter += 1
         return len(output_items[0])
 
 
