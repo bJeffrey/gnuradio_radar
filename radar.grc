@@ -189,7 +189,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1008, 76.0]
+    coordinate: [1000, 76.0]
     rotation: 0
     state: true
 - name: num_samples_during_pulse_tx
@@ -201,7 +201,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [840, 76.0]
+    coordinate: [832, 76.0]
     rotation: 0
     state: true
 - name: num_samples_per_pulse
@@ -297,7 +297,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [632, 76.0]
+    coordinate: [616, 76.0]
     rotation: 0
     state: true
 - name: time_bandwidth_product
@@ -608,14 +608,14 @@ blocks:
       \ step in pulse compression).\n                 Refer to p. 790 (baseband compression\
       \ only, no regard to starting frequency)\n    '''\n    def work(self, input_items,\
       \ output_items):\n    \n        #self.log.error(f\"before assignment, output_items[0]\
-      \ length: {len(output_items[0])}\") \n        output_items[0] = np.ones(self.num_samples_per_pulse,\
-      \ dtype=np.complex64) + 5j\n        #output_items[0] = self.lfm_waveform\n \
-      \       #self.log.error(f\"lfm_waveform length: {len(self.lfm_waveform)}\")\n\
-      \        #self.log.error(f\"output_items[0] length: {len(output_items[0])}\"\
-      )\n        self.log.error(f\"output_items shape: {np.shape(output_items)}\"\
-      )\n        self.log.error(f\"fifth element: {output_items[0][5]}\")\n      \
-      \  #self.log.info(f\"work_counter: {self.work_counter}\")\n        \n      \
-      \  self.work_counter += 1\n        return len(output_items[0])\n\n\n"
+      \ length: {len(output_items[0])}\") \n        #output_items[0][:] = np.ones(self.num_samples_per_pulse,\
+      \ dtype=np.complex64) + 5j\n        output_items[0][:] = self.lfm_waveform\n\
+      \        #self.log.error(f\"lfm_waveform length: {len(self.lfm_waveform)}\"\
+      )\n        #self.log.error(f\"output_items[0] length: {len(output_items[0])}\"\
+      )\n        #self.log.error(f\"output_items shape: {np.shape(output_items)}\"\
+      )\n        #self.log.error(f\"fifth element: {output_items[0][5]}\")\n     \
+      \   #self.log.info(f\"work_counter: {self.work_counter}\")\n        \n     \
+      \   self.work_counter += 1\n        return len(output_items[0])\n\n\n"
     affinity: ''
     alias: ''
     amplitude: amplitude
@@ -728,40 +728,41 @@ blocks:
       \        \n        # set CPI parameters\n        self.num_samples_per_pulse\
       \ = num_samples_per_pulse\n        self.num_pulses_per_cpi = num_pulses_per_cpi\n\
       \        self.pulses = np.zeros((self.num_samples_per_pulse, self.num_pulses_per_cpi),\
-      \ dtype=np.complex64)\n        self.pulse_idx = -1 #initialize to -1, increment\
-      \ at every call to work() at beginning of work()\n        \n        # set target\
-      \ parameters\n        self.c = c\n        self.distance_to_target_m = distance_to_target_m\
-      \        \n        self.target_vel_mps = target_vel_mps\n        self.lambda_m\
-      \ = lambda_m\n        self.pri_sec = pri_sec\n        self.samp_rate = samp_rate\n\
-      \        # calculate range bin and doppler shift of target\n        self.num_samples_to_target\
-      \ = self.distance_to_target_m * self.samp_rate / self.c\n\n        self.doppler_shift_hz\
-      \ = 2 * self.target_vel_mps / self.lambda_m\n\n        self.log.info(f\"pulses\
-      \ shape: {self.pulses.shape}\")\n\n    def work(self, input_items, output_items):\n\
-      \        self.pulse_idx += 1 # first thing that should happen is this value\
-      \ incrementing\n        #self.log.info(f\"length of vector: {len(input_items[0][:])}\"\
-      )\n        #self.log.info(f\"last: {input_items[0][1024*18]}\")\n        my_temp_1\
-      \ = self.pulses[:,self.pulse_idx]\n        self.log.info(f\"my_temp_1.shape:\
-      \ {my_temp_1.shape})\") # ((1024,))\n        my_temp_2 = self.pulses[self.pulse_idx,:]\n\
-      \        self.log.info(f\"my_temp_2.shape: {my_temp_2.shape}\") # (18,)\n  \
-      \      my_temp_3 = self.pulses\n        self.log.info(f\"my_temp_3.shape: {my_temp_3.shape}\"\
-      ) # (1024,18)\n        \n        \n        self.log.error(f\"input_items shape:\
-      \ {np.shape(input_items)}\") #(1, 2, 1024)\n        self.log.info(f\"array_equal:\
-      \ {np.array_equal(input_items[0][0], input_items[0][1])}\")\n        self.log.info(f\"\
-      fifth element 0: {input_items[0][0][5]}\")\n        self.log.info(f\"fifth element\
-      \ 1: {input_items[0][1][5]}\")\n        self.pulses[:,self.pulse_idx] = input_items[0][0][:]\
-      \ # need to loop through this, because I'm getting an input_item that is too\
-      \ large\n        \n        if self.pulse_idx < self.num_pulses_per_cpi:\n  \
-      \          self.log.info(f\"output_items[0]: {len(output_items[0])}\")\n   \
-      \         output_items[0] = np.zeros(self.num_samples_per_pulse * self.num_pulses_per_cpi,\
-      \ dtype=np.complex64)\n            self.log.error(f\"output_items[0] length:\
+      \ dtype=np.complex64)\n        self.pulse_idx = 0\n                \n      \
+      \  # set target parameters\n        self.c = c\n        self.distance_to_target_m\
+      \ = distance_to_target_m        \n        self.target_vel_mps = target_vel_mps\n\
+      \        self.lambda_m = lambda_m\n        self.pri_sec = pri_sec\n        self.samp_rate\
+      \ = samp_rate\n        # calculate range bin and doppler shift of target\n \
+      \       self.num_samples_to_target = self.distance_to_target_m * self.samp_rate\
+      \ / self.c\n\n        self.doppler_shift_hz = 2 * self.target_vel_mps / self.lambda_m\n\
+      \n        self.log.info(f\"pulses shape: {self.pulses.shape}\")\n\n    def work(self,\
+      \ input_items, output_items):\n        #self.log.info(f\"length of vector: {len(input_items[0][:])}\"\
+      )\n        #self.log.info(f\"last: {input_items[0][1024*18]}\")\n        \n\
+      \        #my_temp_1 = self.pulses[:,self.pulse_idx]\n        #self.log.info(f\"\
+      my_temp_1.shape: {my_temp_1.shape})\") # ((1024,))\n        \n        #my_temp_2\
+      \ = self.pulses[self.pulse_idx,:]\n        #self.log.info(f\"my_temp_2.shape:\
+      \ {my_temp_2.shape}\") # (18,)\n        \n        #my_temp_3 = self.pulses\n\
+      \        #self.log.info(f\"my_temp_3.shape: {my_temp_3.shape}\") # (1024,18)\n\
+      \        \n        \n        #self.log.error(f\"call {self.pulse_idx} input_items\
+      \ shape: {np.shape(input_items)}\") #(1, 2, 1024)\n        #self.log.info(f\"\
+      array_equal: {np.array_equal(input_items[0][0], input_items[0][1])}\")\n   \
+      \     \n        #self.log.info(f\"input_items[0][0][2]: {input_items[0][0][2]}\"\
+      )\n        #self.log.info(f\"input_items[0][1][3]: {input_items[0][1][3]}\"\
+      )\n        last_idx = len(input_items[0][:])\n        for i in range (0, last_idx):\n\
+      \            self.pulses[:,self.pulse_idx] = input_items[0][0][:] # need to\
+      \ loop through this, because I'm getting an input_item that is too large\n \
+      \           self.pulse_idx += 1\n        \n        # check against pulse_idx+1\
+      \ due to use of the 0 index\n        if self.pulse_idx+1 < self.num_pulses_per_cpi:\n\
+      \            #self.log.info(f\"output_items[0]: {len(output_items[0])}\")\n\
+      \            output_items[0][:] = np.zeros(self.num_samples_per_pulse * self.num_pulses_per_cpi,\
+      \ dtype=np.complex64)\n            #self.log.error(f\"output_items[0] length:\
       \ {len(output_items[0][:])}\")\n            return len(output_items[0])\n\n\
-      \        self.log.info(f\"I made it! I have {self.pulse_idx} pulses!\")    \
-      \        \n        # if we made it to this line, it is assumed that we have\
+      \        self.log.info(f\"I made it! self.pulses.shape: {self.pulses.shape}\"\
+      )            \n        # if we made it to this line, it is assumed that we have\
       \ a full CPI of data.\n\n        all_pulses = self.pulses.flatten()\n      \
-      \  self.log.info(f\"all_pulses length: {len(all_pulses)}\")\n        output_items[0]\
-      \ = self.pulses.flatten()\n        \n        self.pulse_idx = -1 # reset the\
-      \ pulse_idx - remember that this is incremented at the top of work before it\
-      \ is used\n        return len(output_items[0])\n\n\n\n\n\n\n\n\n"
+      \  self.log.info(f\"all_pulses length: {len(all_pulses)}\")\n        output_items[0][:]\
+      \ = self.pulses.flatten()\n        \n        self.pulse_idx = 0 # reset the\
+      \ pulse_idx\n        return len(output_items[0])\n\n\n\n\n\n\n\n\n"
     affinity: ''
     alias: ''
     c: c

@@ -37,8 +37,8 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
         self.num_samples_per_pulse = num_samples_per_pulse
         self.num_pulses_per_cpi = num_pulses_per_cpi
         self.pulses = np.zeros((self.num_samples_per_pulse, self.num_pulses_per_cpi), dtype=np.complex64)
-        self.pulse_idx = -1 #initialize to -1, increment at every call to work() at beginning of work()
-        
+        self.pulse_idx = 0
+                
         # set target parameters
         self.c = c
         self.distance_to_target_m = distance_to_target_m        
@@ -54,37 +54,44 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
         self.log.info(f"pulses shape: {self.pulses.shape}")
 
     def work(self, input_items, output_items):
-        self.pulse_idx += 1 # first thing that should happen is this value incrementing
         #self.log.info(f"length of vector: {len(input_items[0][:])}")
         #self.log.info(f"last: {input_items[0][1024*18]}")
-        my_temp_1 = self.pulses[:,self.pulse_idx]
-        self.log.info(f"my_temp_1.shape: {my_temp_1.shape})") # ((1024,))
-        my_temp_2 = self.pulses[self.pulse_idx,:]
-        self.log.info(f"my_temp_2.shape: {my_temp_2.shape}") # (18,)
-        my_temp_3 = self.pulses
-        self.log.info(f"my_temp_3.shape: {my_temp_3.shape}") # (1024,18)
+        
+        #my_temp_1 = self.pulses[:,self.pulse_idx]
+        #self.log.info(f"my_temp_1.shape: {my_temp_1.shape})") # ((1024,))
+        
+        #my_temp_2 = self.pulses[self.pulse_idx,:]
+        #self.log.info(f"my_temp_2.shape: {my_temp_2.shape}") # (18,)
+        
+        #my_temp_3 = self.pulses
+        #self.log.info(f"my_temp_3.shape: {my_temp_3.shape}") # (1024,18)
         
         
-        self.log.error(f"input_items shape: {np.shape(input_items)}") #(1, 2, 1024)
-        self.log.info(f"array_equal: {np.array_equal(input_items[0][0], input_items[0][1])}")
-        self.log.info(f"fifth element 0: {input_items[0][0][5]}")
-        self.log.info(f"fifth element 1: {input_items[0][1][5]}")
-        self.pulses[:,self.pulse_idx] = input_items[0][0][:] # need to loop through this, because I'm getting an input_item that is too large
+        #self.log.error(f"call {self.pulse_idx} input_items shape: {np.shape(input_items)}") #(1, 2, 1024)
+        #self.log.info(f"array_equal: {np.array_equal(input_items[0][0], input_items[0][1])}")
         
-        if self.pulse_idx < self.num_pulses_per_cpi:
-            self.log.info(f"output_items[0]: {len(output_items[0])}")
-            output_items[0] = np.zeros(self.num_samples_per_pulse * self.num_pulses_per_cpi, dtype=np.complex64)
-            self.log.error(f"output_items[0] length: {len(output_items[0][:])}")
+        #self.log.info(f"input_items[0][0][2]: {input_items[0][0][2]}")
+        #self.log.info(f"input_items[0][1][3]: {input_items[0][1][3]}")
+        last_idx = len(input_items[0][:])
+        for i in range (0, last_idx):
+            self.pulses[:,self.pulse_idx] = input_items[0][0][:] # need to loop through this, because I'm getting an input_item that is too large
+            self.pulse_idx += 1
+        
+        # check against pulse_idx+1 due to use of the 0 index
+        if self.pulse_idx+1 < self.num_pulses_per_cpi:
+            #self.log.info(f"output_items[0]: {len(output_items[0])}")
+            output_items[0][:] = np.zeros(self.num_samples_per_pulse * self.num_pulses_per_cpi, dtype=np.complex64)
+            #self.log.error(f"output_items[0] length: {len(output_items[0][:])}")
             return len(output_items[0])
 
-        self.log.info(f"I made it! I have {self.pulse_idx} pulses!")            
+        self.log.info(f"I made it! self.pulses.shape: {self.pulses.shape}")            
         # if we made it to this line, it is assumed that we have a full CPI of data.
 
         all_pulses = self.pulses.flatten()
         self.log.info(f"all_pulses length: {len(all_pulses)}")
-        output_items[0] = self.pulses.flatten()
+        output_items[0][:] = self.pulses.flatten()
         
-        self.pulse_idx = -1 # reset the pulse_idx - remember that this is incremented at the top of work before it is used
+        self.pulse_idx = 0 # reset the pulse_idx
         return len(output_items[0])
 
 

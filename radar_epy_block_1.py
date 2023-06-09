@@ -107,12 +107,12 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
     def work(self, input_items, output_items):
     
         #self.log.error(f"before assignment, output_items[0] length: {len(output_items[0])}") 
-        output_items[0] = np.ones(self.num_samples_per_pulse, dtype=np.complex64) + 5j
-        #output_items[0] = self.lfm_waveform
+        #output_items[0][:] = np.ones(self.num_samples_per_pulse, dtype=np.complex64) + 5j
+        output_items[0][:] = self.lfm_waveform
         #self.log.error(f"lfm_waveform length: {len(self.lfm_waveform)}")
         #self.log.error(f"output_items[0] length: {len(output_items[0])}")
-        self.log.error(f"output_items shape: {np.shape(output_items)}")
-        self.log.error(f"fifth element: {output_items[0][5]}")
+        #self.log.error(f"output_items shape: {np.shape(output_items)}")
+        #self.log.error(f"fifth element: {output_items[0][5]}")
         #self.log.info(f"work_counter: {self.work_counter}")
         
         self.work_counter += 1
